@@ -67,11 +67,22 @@ document.addEventListener('DOMContentLoaded', function() {
         
         async function loadGalleryImages() {
             try {
+                const loadingState = document.querySelector('.loading-state');
+                if (loadingState) {
+                    loadingState.style.display = 'flex';
+                }
+                
                 const response = await fetch('/api/images');
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 
                 const data = await response.json();
                 const images = data.images || [];
+                
+                if (loadingState) {
+                    loadingState.style.display = 'none';
+                }
                 
                 if (images.length === 0) {
                     showNoImagesMessage();
@@ -83,6 +94,16 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (error) {
                 console.error('Error loading gallery images:', error);
                 showNoImagesMessage();
+                
+                const loadingState = document.querySelector('.loading-state');
+                if (loadingState) {
+                    loadingState.innerHTML = `
+                        <div class="error-state">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>Failed to load images. Please try again later.</p>
+                        </div>
+                    `;
+                }
             }
         }
         
@@ -151,21 +172,28 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             function updateCarousel() {
+                if (!carouselTrack) return;
+                
                 carouselTrack.style.transform = `translateX(-${currentIndex * 100}%)`;
                 
                 // Update dots
-                document.querySelectorAll('.carousel-dot').forEach((dot, index) => {
-                    dot.classList.toggle('active', index === currentIndex);
-                });
+                const dots = document.querySelectorAll('.carousel-dot');
+                if (dots) {
+                    dots.forEach((dot, index) => {
+                        dot.classList.toggle('active', index === currentIndex);
+                    });
+                }
                 
                 // Update slide items animation
                 document.querySelectorAll('.carousel-item').forEach(item => item.classList.remove('active'));
                 const activeSlideItems = document.querySelectorAll(`.carousel-slide:nth-child(${currentIndex + 1}) .carousel-item`);
-                activeSlideItems.forEach((item, i) => {
-                    setTimeout(() => {
-                        item.classList.add('active');
-                    }, i * 200);
-                });
+                if (activeSlideItems) {
+                    activeSlideItems.forEach((item, i) => {
+                        setTimeout(() => {
+                            item.classList.add('active');
+                        }, i * 200);
+                    });
+                }
             }
             
             function goToSlide(index) {
@@ -188,7 +216,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             function startAutoSlide() {
-                autoSlideInterval = setInterval(nextSlide, 5000);
+                if (slides.length > 1) {
+                    autoSlideInterval = setInterval(nextSlide, 5000);
+                }
             }
             
             function resetAutoSlide() {
@@ -197,8 +227,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Event listeners
-            nextBtn.addEventListener('click', nextSlide);
-            prevBtn.addEventListener('click', prevSlide);
+            if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+            if (prevBtn) prevBtn.addEventListener('click', prevSlide);
             
             // Keyboard navigation
             document.addEventListener('keydown', (e) => {
@@ -218,14 +248,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         function initLightGallery() {
             if (typeof lightGallery !== 'undefined') {
-                lightGallery(document.querySelector('.carousel-track'), {
-                    selector: '.gallery-image',
-                    download: false,
-                    zoom: true,
-                    counter: false,
-                    showAfterLoad: true,
-                    hideBarsDelay: 2000
-                });
+                const galleryElement = document.querySelector('.carousel-track');
+                if (galleryElement) {
+                    lightGallery(galleryElement, {
+                        selector: '.gallery-image',
+                        download: false,
+                        zoom: true,
+                        counter: false,
+                        showAfterLoad: true,
+                        hideBarsDelay: 2000
+                    });
+                }
             }
         }
         

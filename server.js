@@ -33,7 +33,14 @@ app.get('/api/images', async (req, res) => {
       // Add a sample image if directory was just created
       const sampleImagePath = path.join(imagesDir, 'sample.jpg');
       if (!fs.existsSync(sampleImagePath)) {
-        fs.writeFileSync(sampleImagePath, '');
+        // Create a proper sample image by copying from a source
+        const sampleSource = path.join(__dirname, 'sample.jpg');
+        if (fs.existsSync(sampleSource)) {
+          fs.copyFileSync(sampleSource, sampleImagePath);
+        } else {
+          // If no sample source exists, create an empty file (fallback)
+          fs.writeFileSync(sampleImagePath, '');
+        }
       }
     }
 
