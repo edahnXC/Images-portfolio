@@ -60,9 +60,9 @@ document.addEventListener('DOMContentLoaded', function() {
         yearElement.textContent = new Date().getFullYear();
     }
 
-    // ========== Gallery Functionality ==========
-    const galleryGrid = document.querySelector('.gallery-grid');
-    if (galleryGrid) {
+    // ========== Gallery Carousel Functionality ==========
+    const galleryCarousel = document.querySelector('.gallery-carousel');
+    if (galleryCarousel) {
         loadGalleryImages();
         
         async function loadGalleryImages() {
@@ -78,43 +78,147 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
-                populateGallery(images);
-                initLightGallery();
+                initCarousel(images);
                 
-                // Animation for gallery items
-                if (typeof ScrollReveal !== 'undefined') {
-                    ScrollReveal().reveal('.gallery-item', { 
-                        interval: 100,
-                        origin: 'bottom',
-                        distance: '20px'
-                    });
-                }
             } catch (error) {
                 console.error('Error loading gallery images:', error);
                 showNoImagesMessage();
             }
         }
         
-        function populateGallery(images) {
-            galleryGrid.innerHTML = '';
+        function initCarousel(images) {
+            const carouselContainer = document.querySelector('.carousel-container');
+            const carouselTrack = document.querySelector('.carousel-track');
+            const prevBtn = document.querySelector('.prev-btn');
+            const nextBtn = document.querySelector('.next-btn');
+            const dotsContainer = document.querySelector('.carousel-dots');
             
-            images.forEach((image) => {
-                const galleryItem = document.createElement('div');
-                galleryItem.className = 'gallery-item';
-                galleryItem.innerHTML = `
-                    <a href="${image.path}" data-lg-size="1600-1600" class="gallery-image">
-                        <img src="${image.path}" 
-                             alt="Photography by Om Kumar" 
-                             loading="lazy"
-                             onerror="this.parentElement.style.display='none'">
-                    </a>
-                `;
-                galleryGrid.appendChild(galleryItem);
+            let currentIndex = 0;
+            let slides = [];
+            let autoSlideInterval;
+            
+            // Group images into slides (3 per slide)
+            for (let i = 0; i < images.length; i += 3) {
+                slides.push(images.slice(i, i + 3));
+            }
+            
+            // Create carousel slides
+            function createSlides() {
+                carouselTrack.innerHTML = '';
+                dotsContainer.innerHTML = '';
+                
+                slides.forEach((slide, index) => {
+                    // Create slide
+                    const slideElement = document.createElement('div');
+                    slideElement.className = 'carousel-slide';
+                    
+                    // Create items for this slide
+                    slide.forEach((image, imgIndex) => {
+                        const item = document.createElement('div');
+                        item.className = 'carousel-item';
+                        item.innerHTML = `
+                            <a href="${image.path}" data-lg-size="1600-1600" class="gallery-image">
+                                <img src="${image.path}" 
+                                     alt="Photography by Om Kumar" 
+                                     loading="lazy"
+                                     onerror="this.parentElement.style.display='none'">
+                            </a>
+                        `;
+                        slideElement.appendChild(item);
+                    });
+                    
+                    carouselTrack.appendChild(slideElement);
+                    
+                    // Create dot
+                    const dot = document.createElement('div');
+                    dot.className = 'carousel-dot';
+                    if (index === 0) dot.classList.add('active');
+                    dot.addEventListener('click', () => goToSlide(index));
+                    dotsContainer.appendChild(dot);
+                });
+                
+                // Initialize lightGallery
+                initLightGallery();
+                
+                // Set initial position
+                updateCarousel();
+                
+                // Activate first slide items
+                setTimeout(() => {
+                    const firstSlideItems = document.querySelectorAll('.carousel-slide:first-child .carousel-item');
+                    firstSlideItems.forEach(item => item.classList.add('active'));
+                }, 100);
+            }
+            
+            function updateCarousel() {
+                carouselTrack.style.transform = `translateX(-${currentIndex * 100}%)`;
+                
+                // Update dots
+                document.querySelectorAll('.carousel-dot').forEach((dot, index) => {
+                    dot.classList.toggle('active', index === currentIndex);
+                });
+                
+                // Update slide items animation
+                document.querySelectorAll('.carousel-item').forEach(item => item.classList.remove('active'));
+                const activeSlideItems = document.querySelectorAll(`.carousel-slide:nth-child(${currentIndex + 1}) .carousel-item`);
+                activeSlideItems.forEach((item, i) => {
+                    setTimeout(() => {
+                        item.classList.add('active');
+                    }, i * 200);
+                });
+            }
+            
+            function goToSlide(index) {
+                if (index < 0 || index >= slides.length) return;
+                currentIndex = index;
+                updateCarousel();
+                resetAutoSlide();
+            }
+            
+            function nextSlide() {
+                currentIndex = (currentIndex + 1) % slides.length;
+                updateCarousel();
+                resetAutoSlide();
+            }
+            
+            function prevSlide() {
+                currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+                updateCarousel();
+                resetAutoSlide();
+            }
+            
+            function startAutoSlide() {
+                autoSlideInterval = setInterval(nextSlide, 5000);
+            }
+            
+            function resetAutoSlide() {
+                clearInterval(autoSlideInterval);
+                startAutoSlide();
+            }
+            
+            // Event listeners
+            nextBtn.addEventListener('click', nextSlide);
+            prevBtn.addEventListener('click', prevSlide);
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight') nextSlide();
+                if (e.key === 'ArrowLeft') prevSlide();
+            });
+            
+            // Initialize
+            createSlides();
+            startAutoSlide();
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                updateCarousel();
             });
         }
+        
         function initLightGallery() {
             if (typeof lightGallery !== 'undefined') {
-                lightGallery(galleryGrid, {
+                lightGallery(document.querySelector('.carousel-track'), {
                     selector: '.gallery-image',
                     download: false,
                     zoom: true,
@@ -126,15 +230,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         function showNoImagesMessage() {
-            galleryGrid.innerHTML = `
-                <div class="no-images-message">
-                    <h3>Photos coming soon!</h3>
-                    <p>Check back later or follow me on Instagram for updates</p>
-                    <a href="https://www.instagram.com/captured.by.om/" target="_blank" class="btn btn-primary">
-                        <i class="fab fa-instagram"></i> Follow on Instagram
-                    </a>
-                </div>
-            `;
+            const carouselContainer = document.querySelector('.carousel-container');
+            if (carouselContainer) {
+                carouselContainer.innerHTML = `
+                    <div class="no-images-message">
+                        <h3>Photos coming soon!</h3>
+                        <p>Check back later or follow me on Instagram for updates</p>
+                        <a href="https://www.instagram.com/captured.by.om/" target="_blank" class="btn btn-primary">
+                            <i class="fab fa-instagram"></i> Follow on Instagram
+                        </a>
+                    </div>
+                `;
+            }
         }
     }
 
