@@ -18,6 +18,12 @@
         <div class="loader"></div>
     </div>
 
+    <!-- Curtain Transition -->
+    <div class="curtain-transition">
+        <div class="curtain curtain-left"></div>
+        <div class="curtain curtain-right"></div>
+    </div>
+
     <!-- Navigation -->
     <header class="header">
         <div class="container">
@@ -25,7 +31,7 @@
             <nav class="navbar">
                 <ul class="nav-links">
                     <li><a href="#home">Home</a></li>
-                    <li><a href="#gallery">Gallery</a></li>
+                    <li><a href="#gallery" class="gallery-link">Gallery</a></li>
                     <li><a href="#about">About</a></li>
                     <li><a href="#contact">Contact</a></li>
                 </ul>
@@ -42,9 +48,9 @@
     <section class="hero" id="home">
         <div class="container">
             <div class="hero-content">
-                <h1 class="hero-title">Capturing the <span>Essence</span> of Moments</h1>
-                <p class="hero-subtitle">Through the lens of creativity and passion</p>
-                <a href="#gallery" class="btn btn-primary">View Portfolio</a>
+                <h1 class="hero-title animate-text">Capturing the <span>Essence</span> of Moments</h1>
+                <p class="hero-subtitle animate-text delay-1">Through the lens of creativity and passion</p>
+                <a href="#gallery" class="btn btn-primary animate-text delay-2">View Portfolio</a>
             </div>
         </div>
         <div class="scroll-down">
@@ -57,8 +63,8 @@
     <!-- Gallery Section -->
     <section class="gallery" id="gallery">
         <div class="container">
-            <h2 class="section-title">My <span>Work</span></h2>
-            <p class="section-subtitle">A collection of my finest photographs</p>
+            <h2 class="section-title animate-text">My <span>Work</span></h2>
+            <p class="section-subtitle animate-text delay-1">A collection of my finest photographs</p>
             
             <div class="gallery-grid">
                 <!-- Gallery items will be dynamically added via JS -->
@@ -74,25 +80,24 @@
     <section class="about" id="about">
         <div class="container">
             <div class="about-content">
-                <h2 class="section-title">About <span>Me</span></h2>
-                <p class="section-subtitle">The artist behind the lens</p>
+                <h2 class="section-title animate-text">About <span>Me</span></h2>
+                <p class="section-subtitle animate-text delay-1">The artist behind the lens</p>
                 
                 <div class="about-details">
-                    <div class="about-img">
+                    <div class="about-img animate-text">
                         <img src="images/default-profile.jpg" alt="Om Kumar - Photographer" onerror="this.src='https://via.placeholder.com/400x500?text=Profile+Image'">
                     </div>
                     <div class="about-text">
-                        <h3>Om Kumar - Developer & Photographer</h3>
-                        <p>I'm a MERN stack web developer with a passionate hobby for photography. While I build digital experiences by day, I capture visual stories by any chance I get. My journey in photography began as a way to document life's beautiful moments, and it has grown into a creative outlet that complements my technical work.</p>
-                        <p>All my photographs are captured and edited on my iPhone XR using the Lightroom CC mobile application. I believe that great photography isn't about the gear but about the vision and perspective. My work focuses on finding beauty in everyday scenes and transforming them into compelling visual narratives.</p>
-                        <p>You can follow my photographic journey on Instagram <a href="https://www.instagram.com/captured.by.om/" target="_blank" class="instagram-link">@captured.by.om</a> where I regularly share my latest captures and edits.</p>
+                        <h3 class="animate-text">Om Kumar - Developer & Photographer</h3>
+                        <p class="animate-text delay-1">I'm a MERN stack web developer with a passionate hobby for photography. While I build digital experiences by day, I capture visual stories by any chance I get.</p>
+                        <p class="animate-text delay-2">All my photographs are captured and edited on my iPhone XR using the Lightroom CC mobile application. I believe that great photography isn't about the gear but about the vision and perspective.</p>
+                        <p class="animate-text delay-3">You can follow my photographic journey on Instagram <a href="https://www.instagram.com/captured.by.om/" target="_blank" class="instagram-link">@captured.by.om</a> where I regularly share my latest captures and edits.</p>
                         <div class="skills">
-                            <h4>My Photography Setup:</h4>
+                            <h4 class="animate-text">My Photography Setup:</h4>
                             <ul>
-                                <li><strong>Primary Device:</strong> iPhone XR</li>
-                                <li><strong>Editing Software:</strong> Lightroom CC Mobile</li>
-                                <li><strong>Specialties:</strong> Street Photography, Urban Landscapes, Portraits</li>
-                                <li><strong>Approach:</strong> Minimalist compositions, Bold colors, Emotional storytelling</li>
+                                <li class="animate-text delay-1"><strong>Primary Device:</strong> iPhone XR</li>
+                                <li class="animate-text delay-2"><strong>Editing Software:</strong> Lightroom CC Mobile</li>
+                                <li class="animate-text delay-3"><strong>Specialties:</strong> Street Photography, Urban Landscapes</li>
                             </ul>
                         </div>
                     </div>
@@ -104,26 +109,26 @@
     <!-- Contact Section -->
     <section class="contact" id="contact">
         <div class="container">
-            <h2 class="section-title">Get In <span>Touch</span></h2>
-            <p class="section-subtitle">Let's create something amazing together</p>
+            <h2 class="section-title animate-text">Get In <span>Touch</span></h2>
+            <p class="section-subtitle animate-text delay-1">Let's create something amazing together</p>
             
             <div class="contact-content">
                 <div class="contact-info">
-                    <div class="contact-item">
+                    <div class="contact-item animate-text">
                         <i class="fas fa-map-marker-alt"></i>
                         <div class="contact-details">
                             <h4>Location</h4>
                             <p>Jai Prakash Nagar, Ashiyana Nagar, Patna, Bihar</p>
                         </div>
                     </div>
-                    <div class="contact-item">
+                    <div class="contact-item animate-text delay-1">
                         <i class="fas fa-envelope"></i>
                         <div class="contact-details">
                             <h4>Email</h4>
                             <p>edahnXC@gmail.com</p>
                         </div>
                     </div>
-                    <div class="contact-item">
+                    <div class="contact-item animate-text delay-2">
                         <i class="fas fa-phone-alt"></i>
                         <div class="contact-details">
                             <h4>Phone</h4>
@@ -131,26 +136,25 @@
                         </div>
                     </div>
                     <div class="social-links">
-                        <a href="https://www.instagram.com/captured.by.om/" target="_blank"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-behance"></i></a>
-                        <a href="#"><i class="fab fa-dribbble"></i></a>
+                        <a href="https://www.instagram.com/captured.by.om/" target="_blank" class="animate-text delay-3"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="animate-text delay-4"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="animate-text delay-5"><i class="fab fa-behance"></i></a>
                     </div>
                 </div>
-                <form class="contact-form" netlify>
-                    <div class="form-group">
+                <form class="contact-form">
+                    <div class="form-group animate-text">
                         <input type="text" name="name" placeholder="Your Name" required>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group animate-text delay-1">
                         <input type="email" name="email" placeholder="Your Email" required>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group animate-text delay-2">
                         <input type="text" name="subject" placeholder="Subject">
                     </div>
-                    <div class="form-group">
+                    <div class="form-group animate-text delay-3">
                         <textarea name="message" placeholder="Your Message" required></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary">Send Message</button>
+                    <button type="submit" class="btn btn-primary animate-text delay-4">Send Message</button>
                 </form>
             </div>
         </div>
@@ -160,36 +164,33 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
-                <div class="footer-logo">
+                <div class="footer-logo animate-text">
                     <a href="#" class="logo">मैं<span> || Mein</span></a>
                     <p>Capturing moments, creating memories with iPhone XR.</p>
                 </div>
                 <div class="footer-links">
-                    <h4>Quick Links</h4>
+                    <h4 class="animate-text delay-1">Quick Links</h4>
                     <ul>
-                        <li><a href="#home">Home</a></li>
-                        <li><a href="#gallery">Gallery</a></li>
-                        <li><a href="#about">About</a></li>
-                        <li><a href="#contact">Contact</a></li>
+                        <li class="animate-text delay-2"><a href="#home">Home</a></li>
+                        <li class="animate-text delay-3"><a href="#gallery">Gallery</a></li>
+                        <li class="animate-text delay-4"><a href="#about">About</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">
-                    <h4>Connect</h4>
+                    <h4 class="animate-text delay-1">Connect</h4>
                     <ul>
-                        <li><a href="https://www.instagram.com/captured.by.om/" target="_blank">Instagram</a></li>
-                        <li><a href="#">Twitter</a></li>
-                        <li><a href="#">Behance</a></li>
-                        <li><a href="#">Dribbble</a></li>
+                        <li class="animate-text delay-2"><a href="https://www.instagram.com/captured.by.om/" target="_blank">Instagram</a></li>
+                        <li class="animate-text delay-3"><a href="#">Twitter</a></li>
+                        <li class="animate-text delay-4"><a href="#">Behance</a></li>
                     </ul>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; <span id="year"></span> मैं || Mein. All Rights Reserved.</p>
+                <p class="animate-text">&copy; <span id="year"></span> मैं || Mein. All Rights Reserved.</p>
                 <div class="footer-social">
-                    <a href="https://www.instagram.com/captured.by.om/" target="_blank"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-behance"></i></a>
-                    <a href="#"><i class="fab fa-dribbble"></i></a>
+                    <a href="https://www.instagram.com/captured.by.om/" target="_blank" class="animate-text delay-1"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="animate-text delay-2"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="animate-text delay-3"><i class="fab fa-behance"></i></a>
                 </div>
             </div>
         </div>
@@ -202,6 +203,7 @@
     <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.1/lightgallery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.1/plugins/zoom/lg-zoom.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.1/plugins/fullscreen/lg-fullscreen.min.js"></script>
+    <script src="https://unpkg.com/scrollreveal@4.0.9/dist/scrollreveal.min.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

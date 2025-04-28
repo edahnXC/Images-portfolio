@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 preloader.style.display = 'none';
                 document.body.classList.remove('no-scroll');
-            }, 500);
+            }, 800);
         });
     }
 
@@ -60,6 +60,37 @@ document.addEventListener('DOMContentLoaded', function() {
         yearElement.textContent = new Date().getFullYear();
     }
 
+    // ========== Curtain Transition for Gallery ==========
+    const galleryLink = document.querySelector('.gallery-link');
+    const curtainTransition = document.querySelector('.curtain-transition');
+    
+    if (galleryLink && curtainTransition) {
+        galleryLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Show curtain transition
+            curtainTransition.style.display = 'block';
+            document.querySelector('.curtain-left').style.transform = 'translateX(0)';
+            document.querySelector('.curtain-right').style.transform = 'translateX(0)';
+            
+            // Navigate after animation completes
+            setTimeout(() => {
+                window.location.href = this.getAttribute('href');
+            }, 1200);
+        });
+    }
+
+    // Reset curtain when page loads
+    if (curtainTransition) {
+        setTimeout(() => {
+            document.querySelector('.curtain-left').style.transform = 'translateX(-100%)';
+            document.querySelector('.curtain-right').style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                curtainTransition.style.display = 'none';
+            }, 1200);
+        }, 100);
+    }
+
     // ========== Gallery Functionality ==========
     const galleryGrid = document.querySelector('.gallery-grid');
     if (galleryGrid) {
@@ -84,9 +115,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Animation for gallery items
                 if (typeof ScrollReveal !== 'undefined') {
                     ScrollReveal().reveal('.gallery-item', { 
-                        interval: 100,
+                        duration: 1200,
+                        distance: '50px',
+                        easing: 'cubic-bezier(0.5, 0, 0, 1)',
+                        interval: 150,
                         origin: 'bottom',
-                        distance: '20px'
+                        rotate: { x: 10, y: 10, z: 0 },
+                        reset: true
                     });
                 }
             } catch (error) {
@@ -112,6 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 galleryGrid.appendChild(galleryItem);
             });
         }
+        
         function initLightGallery() {
             if (typeof lightGallery !== 'undefined') {
                 lightGallery(galleryGrid, {
@@ -120,7 +156,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     zoom: true,
                     counter: false,
                     showAfterLoad: true,
-                    hideBarsDelay: 2000
+                    hideBarsDelay: 2000,
+                    speed: 600
                 });
             }
         }
@@ -201,4 +238,139 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 5000);
         }
     }
+
+    // ========== Text Animation with ScrollReveal ==========
+    if (typeof ScrollReveal !== 'undefined') {
+        // Initialize ScrollReveal with default config
+        const sr = ScrollReveal({
+            duration: 1200,
+            distance: '60px',
+            easing: 'cubic-bezier(0.5, 0, 0, 1)',
+            interval: 150,
+            reset: true,
+            viewFactor: 0.2
+        });
+
+        // Hero section animations
+        sr.reveal('.hero-title', {
+            delay: 300,
+            origin: 'top'
+        });
+        sr.reveal('.hero-subtitle', {
+            delay: 500,
+            origin: 'bottom'
+        });
+        sr.reveal('.hero .btn', {
+            delay: 700,
+            origin: 'bottom'
+        });
+
+        // Section titles and subtitles
+        sr.reveal('.section-title', {
+            delay: 200,
+            origin: 'top'
+        });
+        sr.reveal('.section-subtitle', {
+            delay: 400,
+            origin: 'bottom'
+        });
+
+        // About section animations
+        sr.reveal('.about-img', {
+            delay: 300,
+            origin: 'left'
+        });
+        sr.reveal('.about-text h3', {
+            delay: 400,
+            origin: 'right'
+        });
+        sr.reveal('.about-text p', {
+            delay: 500,
+            interval: 100,
+            origin: 'right'
+        });
+        sr.reveal('.skills h4', {
+            delay: 600,
+            origin: 'right'
+        });
+        sr.reveal('.skills li', {
+            delay: 700,
+            interval: 100,
+            origin: 'bottom'
+        });
+
+        // Contact section animations
+        sr.reveal('.contact-item', {
+            delay: 300,
+            interval: 100,
+            origin: 'left'
+        });
+        sr.reveal('.social-links a', {
+            delay: 600,
+            interval: 100,
+            origin: 'bottom'
+        });
+        sr.reveal('.form-group', {
+            delay: 300,
+            interval: 100,
+            origin: 'right'
+        });
+
+        // Footer animations
+        sr.reveal('.footer-logo p', {
+            delay: 300,
+            origin: 'bottom'
+        });
+        sr.reveal('.footer-links h4', {
+            delay: 400,
+            origin: 'bottom'
+        });
+        sr.reveal('.footer-links li', {
+            delay: 500,
+            interval: 100,
+            origin: 'bottom'
+        });
+        sr.reveal('.footer-bottom p', {
+            delay: 300,
+            origin: 'bottom'
+        });
+        sr.reveal('.footer-social a', {
+            delay: 400,
+            interval: 100,
+            origin: 'bottom'
+        });
+
+        // Scroll down indicator animation
+        setTimeout(() => {
+            document.querySelector('.scroll-down').classList.add('animated');
+        }, 1800);
+    }
+
+    // ========== Animate elements when they come into view ==========
+    const animateOnScroll = function() {
+        const elements = document.querySelectorAll('.animate-text');
+        
+        elements.forEach(element => {
+            const elementPosition = element.getBoundingClientRect().top;
+            const windowHeight = window.innerHeight;
+            
+            if (elementPosition < windowHeight - 100) {
+                element.classList.add('animated');
+                
+                // Special animation for section title spans
+                if (element.classList.contains('section-title')) {
+                    const span = element.querySelector('span');
+                    if (span) {
+                        span.classList.add('animated');
+                    }
+                }
+            }
+        });
+    };
+
+    // Run once on load
+    animateOnScroll();
+    
+    // Run on scroll
+    window.addEventListener('scroll', animateOnScroll);
 });
