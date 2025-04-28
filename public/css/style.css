@@ -1,10 +1,10 @@
 /* Base Styles */
 :root {
-    --primary-color: #ffffff;
-    --primary-dark: #dedbf7;
+    --primary-color: #6c5ce7;
+    --primary-dark: #5649c0;
     --secondary-color: #00cec9;
-    --dark-color: #c40303;
-    --dark-light: #bb0303;
+    --dark-color: #0f0e17;
+    --dark-light: #1a1a2e;
     --light-color: #f8f9fa;
     --gray-color: #adb5bd;
     --dark-gray: #495057;
