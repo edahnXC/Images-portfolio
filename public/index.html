@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.1/css/lightgallery.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2.7.1/css/lightgallery.min.css">
 </head>
 <body>
     <!-- Preloader -->
@@ -31,7 +31,7 @@
             <nav class="navbar">
                 <ul class="nav-links">
                     <li><a href="#home">Home</a></li>
-                    <li><a href="#gallery" class="gallery-link">Gallery</a></li>
+                    <li><a href="#gallery">Gallery</a></li>
                     <li><a href="#about">About</a></li>
                     <li><a href="#contact">Contact</a></li>
                 </ul>
@@ -141,7 +141,7 @@
                         <a href="#" class="animate-text delay-5"><i class="fab fa-behance"></i></a>
                     </div>
                 </div>
-                <form class="contact-form">
+                <form id="contactForm" class="contact-form" action="https://formspree.io/f/edahnXC@gmail.com" method="POST">
                     <div class="form-group animate-text">
                         <input type="text" name="name" placeholder="Your Name" required>
                     </div>
@@ -155,6 +155,7 @@
                         <textarea name="message" placeholder="Your Message" required></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary animate-text delay-4">Send Message</button>
+                    <div id="form-message" class="form-message"></div>
                 </form>
             </div>
         </div>

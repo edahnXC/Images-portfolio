@@ -4,7 +4,7 @@ const path = require('path');
 const cors = require('cors');
 const app = express();
 
-// Enhanced CORS configuration
+// CORS configuration
 app.use(cors({
   origin: '*',
   methods: ['GET', 'HEAD'],
@@ -28,7 +28,7 @@ if (!fs.existsSync(imagesDir)) {
   console.log('Created images directory at:', imagesDir);
 }
 
-// Image endpoint with improved error handling
+// Image endpoint
 app.get('/api/images', async (req, res) => {
   try {
     const files = await fs.promises.readdir(imagesDir);
@@ -45,23 +45,15 @@ app.get('/api/images', async (req, res) => {
         path: `/images/${file}`
       }));
 
-    // If no images, create a sample image
+    // If no images, create a sample message
     if (images.length === 0) {
-      const sampleImagePath = path.join(imagesDir, 'sample.jpg');
-      if (!fs.existsSync(sampleImagePath)) {
-        // Create a simple placeholder image
-        const placeholderText = 'Add your images to public/images folder';
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
-          <rect width="800" height="600" fill="#6c5ce7"/>
-          <text x="400" y="300" font-family="Arial" font-size="24" fill="white" text-anchor="middle">${placeholderText}</text>
-        </svg>`;
-        fs.writeFileSync(sampleImagePath, svg);
-        images.push({
-          filename: 'sample.jpg',
-          alt: 'Sample placeholder image',
-          path: '/images/sample.jpg'
-        });
-      }
+      return res.json({ 
+        images: [{
+          path: 'https://via.placeholder.com/800x600?text=Add+images+to+public/images',
+          alt: 'No images found in public/images folder'
+        }],
+        message: 'No images found in public/images folder'
+      });
     }
 
     res.json({ images });
@@ -88,12 +80,12 @@ app.use('/api/*', (req, res) => {
   res.status(404).json({ error: 'API endpoint not found' });
 });
 
-// Serve SPA (Single Page Application)
+// Serve SPA
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Port configuration with fallback
+// Port configuration
 const PORT = process.env.PORT || 5500;
 
 // Start server

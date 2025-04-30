@@ -1,384 +1,178 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // ========== Preloader ==========
+    // Preloader
     const preloader = document.querySelector('.preloader');
-    if (preloader) {
-        window.addEventListener('load', function() {
-            preloader.classList.add('fade-out');
-            setTimeout(() => {
-                preloader.style.display = 'none';
-                document.body.classList.remove('no-scroll');
-            }, 800);
-        });
-    }
+    window.addEventListener('load', () => {
+        preloader.classList.add('fade-out');
+        setTimeout(() => {
+            preloader.style.display = 'none';
+        }, 800);
+    });
 
-    // ========== Mobile Navigation ==========
+    // Mobile Navigation
     const hamburger = document.querySelector('.hamburger');
     const navLinks = document.querySelector('.nav-links');
-    if (hamburger && navLinks) {
-        hamburger.addEventListener('click', function() {
-            this.classList.toggle('active');
-            navLinks.classList.toggle('active');
-            document.body.classList.toggle('no-scroll');
-        });
-
-        document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', () => {
-                hamburger.classList.remove('active');
-                navLinks.classList.remove('active');
-                document.body.classList.remove('no-scroll');
-            });
-        });
-    }
-
-    // ========== Sticky Header ==========
-    const header = document.querySelector('.header');
-    if (header) {
-        window.addEventListener('scroll', function() {
-            header.classList.toggle('scrolled', window.scrollY > 50);
-        });
-    }
-
-    // ========== Back to Top Button ==========
-    const backToTopBtn = document.querySelector('.back-to-top');
-    if (backToTopBtn) {
-        window.addEventListener('scroll', function() {
-            backToTopBtn.classList.toggle('active', window.scrollY > 300);
-        });
-        
-        backToTopBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-    }
-
-    // ========== Current Year ==========
-    const yearElement = document.getElementById('year');
-    if (yearElement) {
-        yearElement.textContent = new Date().getFullYear();
-    }
-
-    // ========== Curtain Transition for Gallery ==========
-    const galleryLink = document.querySelector('.gallery-link');
-    const curtainTransition = document.querySelector('.curtain-transition');
     
-    if (galleryLink && curtainTransition) {
-        galleryLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Show curtain transition
-            curtainTransition.style.display = 'block';
-            document.querySelector('.curtain-left').style.transform = 'translateX(0)';
-            document.querySelector('.curtain-right').style.transform = 'translateX(0)';
-            
-            // Navigate after animation completes
-            setTimeout(() => {
-                window.location.href = this.getAttribute('href');
-            }, 1200);
-        });
-    }
+    hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        navLinks.classList.toggle('active');
+    });
 
-    // Reset curtain when page loads
-    if (curtainTransition) {
+    // Close mobile menu when clicking on a link
+    document.querySelectorAll('.nav-links a').forEach(link => {
+        link.addEventListener('click', () => {
+            hamburger.classList.remove('active');
+            navLinks.classList.remove('active');
+        });
+    });
+
+    // Header scroll effect
+    const header = document.querySelector('.header');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 100) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
+
+    // Back to top button
+    const backToTop = document.querySelector('.back-to-top');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            backToTop.classList.add('active');
+        } else {
+            backToTop.classList.remove('active');
+        }
+    });
+
+    backToTop.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+
+    // Scroll reveal animations
+    ScrollReveal().reveal('.animate-text', {
+        delay: 200,
+        distance: '40px',
+        origin: 'bottom',
+        interval: 100,
+        reset: true
+    });
+
+    // Initialize LightGallery
+    if (document.querySelector('.gallery-grid')) {
+        // Simulate loading images (replace with actual image loading)
         setTimeout(() => {
-            document.querySelector('.curtain-left').style.transform = 'translateX(-100%)';
-            document.querySelector('.curtain-right').style.transform = 'translateX(100%)';
-            setTimeout(() => {
-                curtainTransition.style.display = 'none';
-            }, 1200);
-        }, 100);
-    }
-
-    // ========== Gallery Functionality ==========
-    const galleryGrid = document.querySelector('.gallery-grid');
-    if (galleryGrid) {
-        loadGalleryImages();
-        
-async function loadGalleryImages() {
-    try {
-        const response = await fetch('/api/images');
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        
-        const data = await response.json();
-        const images = data.images || [];
-        
-        if (images.length === 0) {
-            showNoImagesMessage();
-            return;
-        }
-        
-        populateGallery(images);
-        initLightGallery();
-        
-        // Add error handling for images
-        document.querySelectorAll('.gallery-item img').forEach(img => {
-            img.onerror = function() {
-                this.parentElement.style.display = 'none';
-                console.warn('Failed to load image:', this.src);
-            };
-        });
-
-        // Animation for gallery items
-        if (typeof ScrollReveal !== 'undefined') {
-            ScrollReveal().reveal('.gallery-item', { 
-                duration: 1200,
-                distance: '50px',
-                easing: 'cubic-bezier(0.5, 0, 0, 1)',
-                interval: 150,
-                origin: 'bottom',
-                rotate: { x: 10, y: 10, z: 0 },
-                reset: true
-            });
-        }
-    } catch (error) {
-        console.error('Error loading gallery images:', error);
-        showNoImagesMessage();
-    }
-}
-        
-        function populateGallery(images) {
-            galleryGrid.innerHTML = '';
+            const loadingState = document.querySelector('.loading-state');
+            if (loadingState) loadingState.style.display = 'none';
             
-            images.forEach((image) => {
+            // Sample gallery items (replace with your actual images)
+            const galleryItems = [
+                { src: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb', title: 'Nature', desc: 'Beautiful landscape' },
+                { src: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470', title: 'Mountains', desc: 'Scenic mountain view' },
+                { src: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05', title: 'Forest', desc: 'Misty forest path' },
+                { src: 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d', title: 'Waterfall', desc: 'Majestic waterfall' },
+                { src: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e', title: 'Cliffs', desc: 'Ocean cliffs' },
+                { src: 'https://images.unsplash.com/photo-1433086966358-54859d0ed716', title: 'Mist', desc: 'Misty morning' }
+            ];
+
+            const galleryGrid = document.querySelector('.gallery-grid');
+            galleryItems.forEach((item, index) => {
                 const galleryItem = document.createElement('div');
-                galleryItem.className = 'gallery-item';
+                galleryItem.className = 'gallery-item animate-text';
+                galleryItem.style.transitionDelay = `${index * 0.1}s`;
                 galleryItem.innerHTML = `
-                    <a href="${image.path}" data-lg-size="1600-1600" class="gallery-image">
-                        <img src="${image.path}" 
-                             alt="Photography by Om Kumar" 
-                             loading="lazy"
-                             onerror="this.parentElement.style.display='none'">
+                    <a href="${item.src}" data-lg-size="1600-2400" class="gallery-image">
+                        <img src="${item.src}" alt="${item.title}" />
+                        <div class="item-info">
+                            <h3>${item.title}</h3>
+                            <p>${item.desc}</p>
+                        </div>
                     </a>
                 `;
                 galleryGrid.appendChild(galleryItem);
             });
-        }
-        
-        function initLightGallery() {
-            if (typeof lightGallery !== 'undefined') {
-                lightGallery(galleryGrid, {
-                    selector: '.gallery-image',
-                    download: false,
-                    zoom: true,
-                    counter: false,
-                    showAfterLoad: true,
-                    hideBarsDelay: 2000,
-                    speed: 600
-                });
-            }
-        }
-        
-        function showNoImagesMessage() {
-            galleryGrid.innerHTML = `
-                <div class="no-images-message">
-                    <h3>Photos coming soon!</h3>
-                    <p>Check back later or follow me on Instagram for updates</p>
-                    <a href="https://www.instagram.com/captured.by.om/" target="_blank" class="btn btn-primary">
-                        <i class="fab fa-instagram"></i> Follow on Instagram
-                    </a>
-                </div>
-            `;
-        }
+
+            // Initialize LightGallery after items are added
+            lightGallery(document.querySelector('.gallery-grid'), {
+                selector: '.gallery-image',
+                download: false,
+                zoom: true,
+                counter: false
+            });
+        }, 1500);
     }
 
-    // ========== Smooth Scrolling ==========
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            const targetId = this.getAttribute('href');
-            if (targetId === '#' || targetId === '#!') return;
-            
-            e.preventDefault();
-            const targetElement = document.querySelector(targetId);
-            
-            if (targetElement) {
-                const headerHeight = document.querySelector('.header')?.offsetHeight || 80;
-                const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
-                
-                window.scrollTo({
-                    top: targetPosition,
-                    behavior: 'smooth'
-                });
-            }
-        });
-    });
-
-    // ========== Contact Form Handling ==========
-    const contactForm = document.querySelector('.contact-form');
+    // Contact form submission
+    const contactForm = document.getElementById('contactForm');
     if (contactForm) {
-        contactForm.addEventListener('submit', async function(e) {
+        contactForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalBtnText = submitBtn.textContent;
+            const submitButton = contactForm.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.textContent;
+            submitButton.textContent = 'Sending...';
+            submitButton.disabled = true;
+            
+            const formData = new FormData(contactForm);
+            const formMessage = document.getElementById('form-message');
             
             try {
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Sending...';
+                const response = await fetch(contactForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
                 
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                this.reset();
-                showFormMessage('Message sent successfully!', 'success');
+                if (response.ok) {
+                    formMessage.textContent = 'Message sent successfully!';
+                    formMessage.classList.add('success');
+                    contactForm.reset();
+                } else {
+                    throw new Error('Form submission failed');
+                }
             } catch (error) {
-                showFormMessage('Failed to send message. Please try again.', 'error');
+                formMessage.textContent = 'Error sending message. Please try again.';
+                formMessage.classList.add('error');
             } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalBtnText;
+                submitButton.textContent = originalButtonText;
+                submitButton.disabled = false;
+                
+                setTimeout(() => {
+                    formMessage.textContent = '';
+                    formMessage.classList.remove('success', 'error');
+                }, 5000);
             }
         });
-        
-        function showFormMessage(message, type) {
-            const existingMsg = contactForm.querySelector('.form-message');
-            if (existingMsg) existingMsg.remove();
-            
-            const msgElement = document.createElement('div');
-            msgElement.className = `form-message ${type}`;
-            msgElement.textContent = message;
-            
-            const submitBtn = contactForm.querySelector('button[type="submit"]');
-            contactForm.insertBefore(msgElement, submitBtn);
-            
-            setTimeout(() => {
-                msgElement.classList.add('fade-out');
-                setTimeout(() => msgElement.remove(), 500);
-            }, 5000);
-        }
     }
 
-    // ========== Text Animation with ScrollReveal ==========
-    if (typeof ScrollReveal !== 'undefined') {
-        // Initialize ScrollReveal with default config
-        const sr = ScrollReveal({
-            duration: 1200,
-            distance: '60px',
-            easing: 'cubic-bezier(0.5, 0, 0, 1)',
-            interval: 150,
-            reset: true,
-            viewFactor: 0.2
-        });
+    // Set current year in footer
+    document.getElementById('year').textContent = new Date().getFullYear();
 
-        // Hero section animations
-        sr.reveal('.hero-title', {
-            delay: 300,
-            origin: 'top'
+    // Activate section title underline animation when in view
+    const sectionTitles = document.querySelectorAll('.section-title');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animated');
+            }
         });
-        sr.reveal('.hero-subtitle', {
-            delay: 500,
-            origin: 'bottom'
-        });
-        sr.reveal('.hero .btn', {
-            delay: 700,
-            origin: 'bottom'
-        });
+    }, { threshold: 0.5 });
 
-        // Section titles and subtitles
-        sr.reveal('.section-title', {
-            delay: 200,
-            origin: 'top'
-        });
-        sr.reveal('.section-subtitle', {
-            delay: 400,
-            origin: 'bottom'
-        });
+    sectionTitles.forEach(title => {
+        observer.observe(title);
+    });
 
-        // About section animations
-        sr.reveal('.about-img', {
-            delay: 300,
-            origin: 'left'
-        });
-        sr.reveal('.about-text h3', {
-            delay: 400,
-            origin: 'right'
-        });
-        sr.reveal('.about-text p', {
-            delay: 500,
-            interval: 100,
-            origin: 'right'
-        });
-        sr.reveal('.skills h4', {
-            delay: 600,
-            origin: 'right'
-        });
-        sr.reveal('.skills li', {
-            delay: 700,
-            interval: 100,
-            origin: 'bottom'
-        });
-
-        // Contact section animations
-        sr.reveal('.contact-item', {
-            delay: 300,
-            interval: 100,
-            origin: 'left'
-        });
-        sr.reveal('.social-links a', {
-            delay: 600,
-            interval: 100,
-            origin: 'bottom'
-        });
-        sr.reveal('.form-group', {
-            delay: 300,
-            interval: 100,
-            origin: 'right'
-        });
-
-        // Footer animations
-        sr.reveal('.footer-logo p', {
-            delay: 300,
-            origin: 'bottom'
-        });
-        sr.reveal('.footer-links h4', {
-            delay: 400,
-            origin: 'bottom'
-        });
-        sr.reveal('.footer-links li', {
-            delay: 500,
-            interval: 100,
-            origin: 'bottom'
-        });
-        sr.reveal('.footer-bottom p', {
-            delay: 300,
-            origin: 'bottom'
-        });
-        sr.reveal('.footer-social a', {
-            delay: 400,
-            interval: 100,
-            origin: 'bottom'
-        });
-
-        // Scroll down indicator animation
+    // Activate scroll down arrow after hero title animation
+    const heroTitle = document.querySelector('.hero-title');
+    if (heroTitle) {
         setTimeout(() => {
             document.querySelector('.scroll-down').classList.add('animated');
-        }, 1800);
+        }, 1500);
     }
-
-    // ========== Animate elements when they come into view ==========
-    const animateOnScroll = function() {
-        const elements = document.querySelectorAll('.animate-text');
-        
-        elements.forEach(element => {
-            const elementPosition = element.getBoundingClientRect().top;
-            const windowHeight = window.innerHeight;
-            
-            if (elementPosition < windowHeight - 100) {
-                element.classList.add('animated');
-                
-                // Special animation for section title spans
-                if (element.classList.contains('section-title')) {
-                    const span = element.querySelector('span');
-                    if (span) {
-                        span.classList.add('animated');
-                    }
-                }
-            }
-        });
-    };
-
-    // Run once on load
-    animateOnScroll();
-    
-    // Run on scroll
-    window.addEventListener('scroll', animateOnScroll);
 });
