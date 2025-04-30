@@ -96,39 +96,47 @@ document.addEventListener('DOMContentLoaded', function() {
     if (galleryGrid) {
         loadGalleryImages();
         
-        async function loadGalleryImages() {
-            try {
-                const response = await fetch('/api/images');
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
-                const data = await response.json();
-                const images = data.images || [];
-                
-                if (images.length === 0) {
-                    showNoImagesMessage();
-                    return;
-                }
-                
-                populateGallery(images);
-                initLightGallery();
-                
-                // Animation for gallery items
-                if (typeof ScrollReveal !== 'undefined') {
-                    ScrollReveal().reveal('.gallery-item', { 
-                        duration: 1200,
-                        distance: '50px',
-                        easing: 'cubic-bezier(0.5, 0, 0, 1)',
-                        interval: 150,
-                        origin: 'bottom',
-                        rotate: { x: 10, y: 10, z: 0 },
-                        reset: true
-                    });
-                }
-            } catch (error) {
-                console.error('Error loading gallery images:', error);
-                showNoImagesMessage();
-            }
+async function loadGalleryImages() {
+    try {
+        const response = await fetch('/api/images');
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const data = await response.json();
+        const images = data.images || [];
+        
+        if (images.length === 0) {
+            showNoImagesMessage();
+            return;
         }
+        
+        populateGallery(images);
+        initLightGallery();
+        
+        // Add error handling for images
+        document.querySelectorAll('.gallery-item img').forEach(img => {
+            img.onerror = function() {
+                this.parentElement.style.display = 'none';
+                console.warn('Failed to load image:', this.src);
+            };
+        });
+
+        // Animation for gallery items
+        if (typeof ScrollReveal !== 'undefined') {
+            ScrollReveal().reveal('.gallery-item', { 
+                duration: 1200,
+                distance: '50px',
+                easing: 'cubic-bezier(0.5, 0, 0, 1)',
+                interval: 150,
+                origin: 'bottom',
+                rotate: { x: 10, y: 10, z: 0 },
+                reset: true
+            });
+        }
+    } catch (error) {
+        console.error('Error loading gallery images:', error);
+        showNoImagesMessage();
+    }
+}
         
         function populateGallery(images) {
             galleryGrid.innerHTML = '';

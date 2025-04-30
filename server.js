@@ -21,29 +21,16 @@ app.use(express.static(path.join(__dirname, 'public'), {
   }
 }));
 
+// Ensure public/images directory exists
+const imagesDir = path.join(__dirname, 'public', 'images');
+if (!fs.existsSync(imagesDir)) {
+  fs.mkdirSync(imagesDir, { recursive: true });
+  console.log('Created images directory at:', imagesDir);
+}
+
 // Image endpoint with improved error handling
 app.get('/api/images', async (req, res) => {
   try {
-    const imagesDir = path.join(__dirname, 'public', 'images');
-    
-    // Create images directory if it doesn't exist
-    if (!fs.existsSync(imagesDir)) {
-      fs.mkdirSync(imagesDir, { recursive: true });
-      
-      // Add a sample image if directory was just created
-      const sampleImagePath = path.join(imagesDir, 'sample.jpg');
-      if (!fs.existsSync(sampleImagePath)) {
-        // Create a proper sample image by copying from a source
-        const sampleSource = path.join(__dirname, 'sample.jpg');
-        if (fs.existsSync(sampleSource)) {
-          fs.copyFileSync(sampleSource, sampleImagePath);
-        } else {
-          // If no sample source exists, create an empty file (fallback)
-          fs.writeFileSync(sampleImagePath, '');
-        }
-      }
-    }
-
     const files = await fs.promises.readdir(imagesDir);
     
     const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif'];
@@ -58,20 +45,28 @@ app.get('/api/images', async (req, res) => {
         path: `/images/${file}`
       }));
 
+    // If no images, create a sample image
     if (images.length === 0) {
-      return res.status(200).json({
-        images: [{
+      const sampleImagePath = path.join(imagesDir, 'sample.jpg');
+      if (!fs.existsSync(sampleImagePath)) {
+        // Create a simple placeholder image
+        const placeholderText = 'Add your images to public/images folder';
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+          <rect width="800" height="600" fill="#6c5ce7"/>
+          <text x="400" y="300" font-family="Arial" font-size="24" fill="white" text-anchor="middle">${placeholderText}</text>
+        </svg>`;
+        fs.writeFileSync(sampleImagePath, svg);
+        images.push({
           filename: 'sample.jpg',
-          alt: 'Sample image',
+          alt: 'Sample placeholder image',
           path: '/images/sample.jpg'
-        }],
-        message: 'No images found, serving sample placeholder'
-      });
+        });
+      }
     }
 
     res.json({ images });
   } catch (error) {
-    console.error('Server error:', error);
+    console.error('Error loading images:', error);
     res.status(500).json({
       error: 'Internal server error',
       details: error.message
@@ -105,6 +100,7 @@ const PORT = process.env.PORT || 5500;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Local: http://localhost:${PORT}`);
+  console.log(`Images directory: ${imagesDir}`);
 }).on('error', (err) => {
   console.error(`Server error: ${err.message}`);
   process.exit(1);
