@@ -1,13 +1,13 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
     // Preloader
     const preloader = document.querySelector('.preloader');
     if (preloader) {
-        window.addEventListener('load', () => {
-            preloader.classList.add('fade-out');
+        setTimeout(() => {
+            preloader.style.opacity = '0';
             setTimeout(() => {
                 preloader.style.display = 'none';
-            }, 800);
-        });
+            }, 500);
+        }, 1000);
     }
 
     // Mobile Navigation
@@ -111,6 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="loader"></div>
             <p>Loading images...</p>
         `;
+        galleryGrid.innerHTML = '';
         galleryGrid.appendChild(loadingState);
 
         // Fetch images
@@ -138,9 +139,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     galleryItem.className = 'gallery-item animate-text';
                     galleryItem.style.transitionDelay = `${index * 0.1}s`;
 
+                    // Ensure correct image path
+                    const imageUrl = image.url.startsWith('/') ? image.url : `/images/${image.filename}`;
+
                     galleryItem.innerHTML = `
                         <div class="gallery-image-container">
-                            <img src="${image.url}" alt="${title || 'Photograph'}" loading="lazy" />
+                            <img src="${imageUrl}" alt="${title || 'Photograph'}" loading="lazy" />
                             <div class="item-info">
                                 <h3>${title || 'Untitled'}</h3>
                                 <p>Photograph captured on iPhone XR</p>
@@ -169,15 +173,19 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
 
         document.getElementById('retry-button')?.addEventListener('click', () => {
-            window.location.reload();
+            initializeGallery();
         });
     }
 
-    setTimeout(initializeGallery, 1500);
+    // Initialize gallery after slight delay
+    setTimeout(initializeGallery, 500);
 
     // Contact Form
     const contactForm = document.getElementById('contactForm');
     if (contactForm) {
+        // Correct form action - replace with your actual Formspree endpoint
+        contactForm.action = 'https://formspree.io/f/YOUR_FORMSPREE_ENDPOINT';
+        
         contactForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitButton = contactForm.querySelector('button[type="submit"]');
