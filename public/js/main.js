@@ -169,7 +169,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     galleryItem.innerHTML = `
                         <a href="${image.url}" data-lg-size="1600-2400" class="gallery-image">
-                            <img src="${image.url}" alt="${title || 'Photograph'}" loading="lazy" />
+                            <img src="${image.url}" alt="${title || 'Photograph'}" loading="lazy" 
+                                 onerror="this.src='https://via.placeholder.com/600x400?text=Image+Not+Available'" />
                             <div class="item-info">
                                 <h3>${title || 'Untitled'}</h3>
                                 <p>Photograph captured on iPhone XR</p>
@@ -187,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         zoom: true,
                         counter: false,
                         fullScreen: true,
-                        licenseKey: '0000-0000-000-0000' // For development only
+                        licenseKey: 'your-actual-license-key' // Replace with your actual license key
                     });
                 } else {
                     console.warn('LightGallery not loaded, using fallback behavior');

@@ -93,9 +93,12 @@ app.get('/api/images', async (req, res) => {
                 const filePath = path.join(IMAGE_DIR, file);
                 const stats = fs.statSync(filePath);
                 
+                // Ensure URL is properly formatted
+                const imageUrl = `/images/${encodeURIComponent(file)}`;
+                
                 return {
                     filename: file,
-                    url: `/images/${file}`,
+                    url: imageUrl,
                     alt: path.parse(file).name.replace(/[-_]/g, ' '),
                     timestamp: stats.mtime.toISOString(),
                     size: stats.size
