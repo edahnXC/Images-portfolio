@@ -21,15 +21,42 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "https://cdn.jsdelivr.net"],
-            styleSrc: ["'self'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com", "'unsafe-inline'"],
-            fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "data:"],
-            imgSrc: ["'self'", "data:", "https://via.placeholder.com"],
-            connectSrc: ["'self'"],
+            scriptSrc: [
+                "'self'", 
+                "https://cdn.jsdelivr.net",
+                "'unsafe-eval'" // Needed for ScrollReveal
+            ],
+            scriptSrcAttr: ["'self'"], // Allow inline event handlers
+            styleSrc: [
+                "'self'", 
+                "https://cdn.jsdelivr.net", 
+                "https://fonts.googleapis.com", 
+                "https://cdnjs.cloudflare.com", 
+                "'unsafe-inline'"
+            ],
+            fontSrc: [
+                "'self'", 
+                "https://fonts.gstatic.com", 
+                "https://cdnjs.cloudflare.com", 
+                "https://cdn.jsdelivr.net", 
+                "data:"
+            ],
+            imgSrc: [
+                "'self'", 
+                "data:", 
+                "https://via.placeholder.com",
+                "https:" // Allow all HTTPS images
+            ],
+            connectSrc: [
+                "'self'",
+                "https://formspree.io" // For contact form
+            ],
             frameSrc: ["'none'"],
-            objectSrc: ["'none'"]
+            objectSrc: ["'none'"],
+            workerSrc: ["'self'"]
         }
-    }
+    },
+    crossOriginEmbedderPolicy: false // Needed for some external resources
 }));
 
 app.use(cors({

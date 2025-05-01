@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Back to Top Button
-    const backToTop = document.querySelector('.back-to-top');
+    const backToTop = document.getElementById('backToTop');
     if (backToTop) {
         window.addEventListener('scroll', () => {
             if (window.scrollY > 300) {
@@ -63,6 +63,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 top: 0,
                 behavior: 'smooth'
             });
+        });
+    }
+
+    // View Portfolio Button
+    const viewPortfolioBtn = document.getElementById('viewPortfolioBtn');
+    if (viewPortfolioBtn) {
+        viewPortfolioBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelector('#gallery')?.scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+
+    // Scroll Down Button
+    const scrollDown = document.getElementById('scrollDown');
+    if (scrollDown) {
+        scrollDown.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelector('#gallery')?.scrollIntoView({ behavior: 'smooth' });
         });
     }
 
@@ -264,12 +282,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const heroTitle = document.querySelector('.hero-title');
     if (heroTitle) {
         setTimeout(() => {
-            const scrollDown = document.querySelector('.scroll-down');
+            const scrollDown = document.getElementById('scrollDown');
             if (scrollDown) {
                 scrollDown.classList.add('animated');
-                scrollDown.addEventListener('click', () => {
-                    document.querySelector('#gallery')?.scrollIntoView({ behavior: 'smooth' });
-                });
             }
         }, 1500);
     }
