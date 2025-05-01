@@ -1,7 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // ======================
     // Preloader
-    // ======================
     const preloader = document.querySelector('.preloader');
     if (preloader) {
         window.addEventListener('load', () => {
@@ -12,9 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ======================
     // Mobile Navigation
-    // ======================
     const hamburger = document.querySelector('.hamburger');
     const navLinks = document.querySelector('.nav-links');
     
@@ -38,9 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ======================
     // Header Scroll Effect
-    // ======================
     const header = document.querySelector('.header');
     if (header) {
         window.addEventListener('scroll', () => {
@@ -52,9 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ======================
     // Back to Top Button
-    // ======================
     const backToTop = document.querySelector('.back-to-top');
     if (backToTop) {
         window.addEventListener('scroll', () => {
@@ -74,9 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ======================
     // Scroll Reveal Animations
-    // ======================
     function initializeScrollReveal() {
         if (typeof ScrollReveal !== 'undefined') {
             const sr = ScrollReveal({
@@ -91,7 +81,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 interval: 100
             });
 
-            // Special animations for specific elements
             sr.reveal('.hero-title', {
                 delay: 300,
                 distance: '60px'
@@ -114,7 +103,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize with fallback
     if (!initializeScrollReveal()) {
-        // Fallback if ScrollReveal fails to load
         setTimeout(() => {
             document.querySelectorAll('.animate-text').forEach(el => {
                 el.style.opacity = '1';
@@ -123,9 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 1000);
     }
 
-    // ======================
-    // Gallery Functionality (Fixed Version)
-    // ======================
+    // Gallery Functionality
     function initializeGallery() {
         const galleryGrid = document.querySelector('.gallery-grid');
         if (!galleryGrid) return;
@@ -169,8 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     galleryItem.innerHTML = `
                         <a href="${image.url}" data-lg-size="1600-2400" class="gallery-image">
-                            <img src="${image.url}" alt="${title || 'Photograph'}" loading="lazy" 
-                                 onerror="this.src='https://via.placeholder.com/600x400?text=Image+Not+Available'" />
+                            <img src="${image.url}" alt="${title || 'Photograph'}" loading="lazy" />
                             <div class="item-info">
                                 <h3>${title || 'Untitled'}</h3>
                                 <p>Photograph captured on iPhone XR</p>
@@ -180,19 +165,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     galleryGrid.appendChild(galleryItem);
                 });
 
-                // Check if LightGallery is loaded
+                // Initialize LightGallery if available
                 if (typeof lightGallery !== 'undefined') {
                     lightGallery(galleryGrid, {
                         selector: '.gallery-image',
                         download: false,
                         zoom: true,
                         counter: false,
-                        fullScreen: true,
-                        licenseKey: 'your-actual-license-key' // Replace with your actual license key
+                        fullScreen: true
                     });
                 } else {
                     console.warn('LightGallery not loaded, using fallback behavior');
-                    // Fallback behavior - make images clickable to view full size
                     galleryGrid.querySelectorAll('.gallery-image').forEach(img => {
                         img.addEventListener('click', (e) => {
                             e.preventDefault();
@@ -219,7 +202,6 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
 
-        // Add event listener properly (not inline)
         document.getElementById('retry-button')?.addEventListener('click', () => {
             window.location.reload();
         });
@@ -228,9 +210,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize gallery after slight delay
     setTimeout(initializeGallery, 1500);
 
-    // ======================
     // Contact Form Handling
-    // ======================
     const contactForm = document.getElementById('contactForm');
     if (contactForm) {
         contactForm.addEventListener('submit', async (e) => {
@@ -277,17 +257,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ======================
     // Current Year in Footer
-    // ======================
     const yearElement = document.getElementById('year');
     if (yearElement) {
         yearElement.textContent = new Date().getFullYear();
     }
 
-    // ======================
     // Section Title Animations
-    // ======================
     const sectionTitles = document.querySelectorAll('.section-title');
     if (sectionTitles.length > 0) {
         const observer = new IntersectionObserver((entries) => {
@@ -303,16 +279,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ======================
     // Hero Scroll Down Arrow
-    // ======================
     const heroTitle = document.querySelector('.hero-title');
     if (heroTitle) {
         setTimeout(() => {
             const scrollDown = document.querySelector('.scroll-down');
             if (scrollDown) {
                 scrollDown.classList.add('animated');
-                // Add proper event listener (not inline)
                 scrollDown.addEventListener('click', () => {
                     document.querySelector('#gallery')?.scrollIntoView({ behavior: 'smooth' });
                 });

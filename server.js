@@ -12,7 +12,6 @@ const app = express();
 // Configuration
 const PORT = process.env.PORT || 5500;
 const NODE_ENV = process.env.NODE_ENV || 'development';
-const BASE_URL = NODE_ENV === 'development' ? `http://localhost:${PORT}` : 'https://yourdomain.com';
 
 // Security Middleware
 app.use(helmet({
@@ -22,23 +21,25 @@ app.use(helmet({
             scriptSrc: ["'self'", "https://cdn.jsdelivr.net", "https://unpkg.com"],
             styleSrc: ["'self'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com", "'unsafe-inline'"],
             fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "data:"],
-            imgSrc: ["'self'", "data:", "https://via.placeholder.com"],
-            connectSrc: ["'self'", "https://images-portfolio-wp42.onrender.com"],
+            imgSrc: ["'self'", "data:", "https://via.placeholder.com", "https://images-portfolio-wp42.onrender.com"],
+            connectSrc: ["'self'"],
             frameSrc: ["'none'"],
-            objectSrc: ["'none'"]
+            objectSrc: ["'none'"],
+            workerSrc: ["'self'", "blob:"]
         }
     }
 }));
 
 app.use(cors({
-    origin: NODE_ENV === 'development' ? '*' : [BASE_URL],
-    methods: ['GET', 'HEAD'],
+    origin: NODE_ENV === 'development' ? '*' : ['https://images-portfolio-wp42.onrender.com'],
+    methods: ['GET', 'HEAD', 'POST'],
     allowedHeaders: ['Content-Type']
 }));
 
 // Performance Middleware
 app.use(compression());
 app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // Logging
 if (NODE_ENV === 'development') {
@@ -93,12 +94,9 @@ app.get('/api/images', async (req, res) => {
                 const filePath = path.join(IMAGE_DIR, file);
                 const stats = fs.statSync(filePath);
                 
-                // Ensure URL is properly formatted
-                const imageUrl = `/images/${encodeURIComponent(file)}`;
-                
                 return {
                     filename: file,
-                    url: imageUrl,
+                    url: `/images/${file}`,
                     alt: path.parse(file).name.replace(/[-_]/g, ' '),
                     timestamp: stats.mtime.toISOString(),
                     size: stats.size
