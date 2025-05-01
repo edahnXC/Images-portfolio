@@ -1,257 +1,393 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Preloader
+document.addEventListener('DOMContentLoaded', function() {
+    // ========== Preloader ==========
     const preloader = document.querySelector('.preloader');
     if (preloader) {
-        setTimeout(() => {
-            preloader.style.opacity = '0';
+        window.addEventListener('load', function() {
+            preloader.classList.add('fade-out');
             setTimeout(() => {
                 preloader.style.display = 'none';
+                document.body.classList.remove('no-scroll');
             }, 500);
-        }, 1000);
+        });
     }
 
-    // Mobile Navigation
+    // ========== Mobile Navigation ==========
     const hamburger = document.querySelector('.hamburger');
     const navLinks = document.querySelector('.nav-links');
-
     if (hamburger && navLinks) {
-        hamburger.addEventListener('click', () => {
-            hamburger.classList.toggle('active');
+        hamburger.addEventListener('click', function() {
+            this.classList.toggle('active');
             navLinks.classList.toggle('active');
+            document.body.classList.toggle('no-scroll');
         });
 
         document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const target = document.querySelector(link.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth' });
-                }
+            link.addEventListener('click', () => {
                 hamburger.classList.remove('active');
                 navLinks.classList.remove('active');
+                document.body.classList.remove('no-scroll');
             });
         });
     }
 
-    // Header Scroll Effect
+    // ========== Sticky Header ==========
     const header = document.querySelector('.header');
     if (header) {
-        window.addEventListener('scroll', () => {
-            header.classList.toggle('scrolled', window.scrollY > 100);
+        window.addEventListener('scroll', function() {
+            header.classList.toggle('scrolled', window.scrollY > 50);
         });
     }
 
-    // Back to Top Button
-    const backToTop = document.getElementById('backToTop');
-    if (backToTop) {
-        window.addEventListener('scroll', () => {
-            backToTop.classList.toggle('active', window.scrollY > 300);
+    // ========== Back to Top Button ==========
+    const backToTopBtn = document.querySelector('.back-to-top');
+    if (backToTopBtn) {
+        window.addEventListener('scroll', function() {
+            backToTopBtn.classList.toggle('active', window.scrollY > 300);
         });
-
-        backToTop.addEventListener('click', (e) => {
-            e.preventDefault();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-    }
-
-    // Scroll Buttons
-    const scrollTargets = {
-        viewPortfolioBtn: '#gallery',
-        scrollDown: '#gallery'
-    };
-
-    for (const [btnId, targetSelector] of Object.entries(scrollTargets)) {
-        const btn = document.getElementById(btnId);
-        if (btn) {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                document.querySelector(targetSelector)?.scrollIntoView({ behavior: 'smooth' });
-            });
-        }
-    }
-
-    // Scroll Reveal Animations
-    function initializeScrollReveal() {
-        if (typeof ScrollReveal !== 'undefined') {
-            const sr = ScrollReveal({
-                reset: true,
-                distance: '40px',
-                duration: 1000,
-                delay: 200
-            });
-
-            sr.reveal('.animate-text', { origin: 'bottom', interval: 100 });
-            sr.reveal('.hero-title', { delay: 300, distance: '60px' });
-            sr.reveal('.hero-subtitle', { delay: 500, distance: '40px' });
-            sr.reveal('.btn-primary', { delay: 700, distance: '40px' });
-
-            return true;
-        }
-        return false;
-    }
-
-    if (!initializeScrollReveal()) {
-        setTimeout(() => {
-            document.querySelectorAll('.animate-text').forEach(el => {
-                el.style.opacity = '1';
-                el.style.transform = 'translateY(0)';
-            });
-        }, 1000);
-    }
-
-    // Gallery Functionality
-    function initializeGallery() {
-        const galleryGrid = document.querySelector('.gallery-grid');
-        if (!galleryGrid) return;
-
-        // Show loading state
-        const loadingState = document.createElement('div');
-        loadingState.className = 'loading-state';
-        loadingState.innerHTML = `
-            <div class="loader"></div>
-            <p>Loading images...</p>
-        `;
-        galleryGrid.innerHTML = '';
-        galleryGrid.appendChild(loadingState);
-
-        // Fetch images
-        fetch('/api/images')
-            .then(res => {
-                if (!res.ok) throw new Error('Failed to fetch images');
-                return res.json();
-            })
-            .then(data => {
-                if (!data.success || !data.images || data.images.length === 0) {
-                    throw new Error(data.message || 'No images found');
-                }
-
-                galleryGrid.innerHTML = '';
-
-                data.images.forEach((image, index) => {
-                    if (!image.url) return; // Skip broken images
-
-                    const title = image.filename
-                        .replace(/\.[^/.]+$/, '')
-                        .replace(/[^a-zA-Z ]/g, ' ')
-                        .replace(/\b\w/g, l => l.toUpperCase());
-
-                    const galleryItem = document.createElement('div');
-                    galleryItem.className = 'gallery-item animate-text';
-                    galleryItem.style.transitionDelay = `${index * 0.1}s`;
-
-                    // Ensure correct image path
-                    const imageUrl = image.url.startsWith('/') ? image.url : `/images/${image.filename}`;
-
-                    galleryItem.innerHTML = `
-                        <div class="gallery-image-container">
-                            <img src="${imageUrl}" alt="${title || 'Photograph'}" loading="lazy" />
-                            <div class="item-info">
-                                <h3>${title || 'Untitled'}</h3>
-                                <p>Photograph captured on iPhone XR</p>
-                            </div>
-                        </div>
-                    `;
-                    galleryGrid.appendChild(galleryItem);
-                });
-            })
-            .catch(err => {
-                console.error('Gallery error:', err);
-                showGalleryError(err.message);
-            });
-    }
-
-    function showGalleryError(message) {
-        const galleryGrid = document.querySelector('.gallery-grid');
-        if (!galleryGrid) return;
-
-        galleryGrid.innerHTML = `
-            <div class="error-message">
-                <p>${message}</p>
-                ${message.includes('No images') ? '<p>Please upload images to the server</p>' : ''}
-                <button class="btn btn-primary" id="retry-button">Try Again</button>
-            </div>
-        `;
-
-        document.getElementById('retry-button')?.addEventListener('click', () => {
-            initializeGallery();
-        });
-    }
-
-    // Initialize gallery after slight delay
-    setTimeout(initializeGallery, 500);
-
-    // Contact Form
-    const contactForm = document.getElementById('contactForm');
-    if (contactForm) {
-        // Correct form action - replace with your actual Formspree endpoint
-        contactForm.action = 'https://formspree.io/f/YOUR_FORMSPREE_ENDPOINT';
         
-        contactForm.addEventListener('submit', async (e) => {
+        backToTopBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            const submitButton = contactForm.querySelector('button[type="submit"]');
-            const originalText = submitButton.textContent;
-            const formMessage = document.getElementById('form-message');
-            const formData = new FormData(contactForm);
-
-            submitButton.textContent = 'Sending...';
-            submitButton.disabled = true;
-
-            try {
-                const response = await fetch(contactForm.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: { 'Accept': 'application/json' }
-                });
-
-                if (response.ok) {
-                    formMessage.textContent = 'Message sent successfully!';
-                    formMessage.classList.add('success');
-                    contactForm.reset();
-                } else {
-                    const errData = await response.json();
-                    throw new Error(errData.error || 'Failed to send message');
-                }
-            } catch (error) {
-                console.error('Contact form error:', error);
-                formMessage.textContent = error.message;
-                formMessage.classList.add('error');
-            } finally {
-                submitButton.textContent = originalText;
-                submitButton.disabled = false;
-                setTimeout(() => {
-                    formMessage.textContent = '';
-                    formMessage.classList.remove('success', 'error');
-                }, 5000);
-            }
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
         });
     }
 
-    // Footer Year
+    // ========== Current Year ==========
     const yearElement = document.getElementById('year');
     if (yearElement) {
         yearElement.textContent = new Date().getFullYear();
     }
 
-    // Animate Section Titles
-    const sectionTitles = document.querySelectorAll('.section-title');
-    if (sectionTitles.length > 0) {
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animated');
+    // ========== Gallery Carousel Functionality ==========
+    const galleryCarousel = document.querySelector('.gallery-carousel');
+    if (galleryCarousel) {
+        loadGalleryImages();
+        
+        async function loadGalleryImages() {
+            try {
+                const loadingState = document.querySelector('.loading-state');
+                if (loadingState) {
+                    loadingState.style.display = 'flex';
                 }
+                
+                // Use fallback images if API fails
+                const fallbackImages = [
+                    { path: 'https://source.unsplash.com/random/800x800/?photography,portrait', alt: 'Fallback image 1' },
+                    { path: 'https://source.unsplash.com/random/800x800/?nature,landscape', alt: 'Fallback image 2' },
+                    { path: 'https://source.unsplash.com/random/800x800/?city,urban', alt: 'Fallback image 3' },
+                    { path: 'https://source.unsplash.com/random/800x800/?street,photography', alt: 'Fallback image 4' },
+                    { path: 'https://source.unsplash.com/random/800x800/?blackandwhite', alt: 'Fallback image 5' },
+                    { path: 'https://source.unsplash.com/random/800x800/?art,creative', alt: 'Fallback image 6' }
+                ];
+                
+                let images = fallbackImages;
+                
+                try {
+                    const response = await fetch('/api/images');
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.images && data.images.length > 0) {
+                            images = data.images;
+                        }
+                    }
+                } catch (error) {
+                    console.log('Using fallback images due to API error:', error);
+                }
+                
+                if (loadingState) {
+                    loadingState.style.display = 'none';
+                }
+                
+                if (images.length === 0) {
+                    showNoImagesMessage();
+                    return;
+                }
+                
+                initCarousel(images);
+                
+            } catch (error) {
+                console.error('Error loading gallery images:', error);
+                showNoImagesMessage();
+                
+                const loadingState = document.querySelector('.loading-state');
+                if (loadingState) {
+                    loadingState.innerHTML = `
+                        <div class="error-state">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>Failed to load images. Please try again later.</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        function initCarousel(images) {
+            const carouselContainer = document.querySelector('.carousel-container');
+            const carouselTrack = document.querySelector('.carousel-track');
+            const prevBtn = document.querySelector('.prev-btn');
+            const nextBtn = document.querySelector('.next-btn');
+            const dotsContainer = document.querySelector('.carousel-dots');
+            
+            let currentIndex = 0;
+            let slides = [];
+            let autoSlideInterval;
+            
+            // Group images into slides (3 per slide)
+            for (let i = 0; i < images.length; i += 3) {
+                slides.push(images.slice(i, i + 3));
+            }
+            
+            // Create carousel slides
+            function createSlides() {
+                carouselTrack.innerHTML = '';
+                dotsContainer.innerHTML = '';
+                
+                slides.forEach((slide, index) => {
+                    // Create slide
+                    const slideElement = document.createElement('div');
+                    slideElement.className = 'carousel-slide';
+                    
+                    // Create items for this slide
+                    slide.forEach((image, imgIndex) => {
+                        const item = document.createElement('div');
+                        item.className = 'carousel-item';
+                        item.innerHTML = `
+                            <a href="${image.path}" data-lg-size="1600-1600" class="gallery-image">
+                                <img src="${image.path}" 
+                                     alt="${image.alt || 'Photography by Om Kumar'}" 
+                                     loading="lazy"
+                                     onerror="this.src='https://via.placeholder.com/800x800?text=Image+Not+Available'">
+                            </a>
+                        `;
+                        slideElement.appendChild(item);
+                    });
+                    
+                    carouselTrack.appendChild(slideElement);
+                    
+                    // Create dot
+                    const dot = document.createElement('div');
+                    dot.className = 'carousel-dot';
+                    if (index === 0) dot.classList.add('active');
+                    dot.addEventListener('click', () => goToSlide(index));
+                    dotsContainer.appendChild(dot);
+                });
+                
+                // Initialize lightGallery
+                initLightGallery();
+                
+                // Set initial position
+                updateCarousel();
+                
+                // Activate first slide items
+                setTimeout(() => {
+                    const firstSlideItems = document.querySelectorAll('.carousel-slide:first-child .carousel-item');
+                    firstSlideItems.forEach(item => item.classList.add('active'));
+                }, 100);
+            }
+            
+            function updateCarousel() {
+                if (!carouselTrack) return;
+                
+                carouselTrack.style.transform = `translateX(-${currentIndex * 100}%)`;
+                
+                // Update dots
+                const dots = document.querySelectorAll('.carousel-dot');
+                if (dots) {
+                    dots.forEach((dot, index) => {
+                        dot.classList.toggle('active', index === currentIndex);
+                    });
+                }
+                
+                // Update slide items animation
+                document.querySelectorAll('.carousel-item').forEach(item => item.classList.remove('active'));
+                const activeSlideItems = document.querySelectorAll(`.carousel-slide:nth-child(${currentIndex + 1}) .carousel-item`);
+                if (activeSlideItems) {
+                    activeSlideItems.forEach((item, i) => {
+                        setTimeout(() => {
+                            item.classList.add('active');
+                        }, i * 200);
+                    });
+                }
+            }
+            
+            function goToSlide(index) {
+                if (index < 0 || index >= slides.length) return;
+                currentIndex = index;
+                updateCarousel();
+                resetAutoSlide();
+            }
+            
+            function nextSlide() {
+                currentIndex = (currentIndex + 1) % slides.length;
+                updateCarousel();
+                resetAutoSlide();
+            }
+            
+            function prevSlide() {
+                currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+                updateCarousel();
+                resetAutoSlide();
+            }
+            
+            function startAutoSlide() {
+                if (slides.length > 1) {
+                    autoSlideInterval = setInterval(nextSlide, 5000);
+                }
+            }
+            
+            function resetAutoSlide() {
+                clearInterval(autoSlideInterval);
+                startAutoSlide();
+            }
+            
+            // Event listeners
+            if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+            if (prevBtn) prevBtn.addEventListener('click', prevSlide);
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight') nextSlide();
+                if (e.key === 'ArrowLeft') prevSlide();
             });
-        }, { threshold: 0.5 });
-
-        sectionTitles.forEach(title => observer.observe(title));
+            
+            // Initialize
+            createSlides();
+            startAutoSlide();
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                updateCarousel();
+            });
+        }
+        
+        function initLightGallery() {
+            if (typeof lightGallery !== 'undefined') {
+                const galleryElement = document.querySelector('.carousel-track');
+                if (galleryElement) {
+                    lightGallery(galleryElement, {
+                        selector: '.gallery-image',
+                        download: false,
+                        zoom: true,
+                        counter: false,
+                        showAfterLoad: true,
+                        hideBarsDelay: 2000
+                    });
+                }
+            }
+        }
+        
+        function showNoImagesMessage() {
+            const carouselContainer = document.querySelector('.carousel-container');
+            if (carouselContainer) {
+                carouselContainer.innerHTML = `
+                    <div class="no-images-message">
+                        <h3>Photos coming soon!</h3>
+                        <p>Check back later or follow me on Instagram for updates</p>
+                        <a href="https://www.instagram.com/captured.by.om/" target="_blank" class="btn btn-primary">
+                            <i class="fab fa-instagram"></i> Follow on Instagram
+                        </a>
+                    </div>
+                `;
+            }
+        }
     }
 
-    // Animate Hero Arrow
-    const heroTitle = document.querySelector('.hero-title');
-    if (heroTitle) {
-        setTimeout(() => {
-            const scrollDown = document.getElementById('scrollDown');
-            if (scrollDown) scrollDown.classList.add('animated');
-        }, 1500);
+    // ========== Smooth Scrolling ==========
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const targetId = this.getAttribute('href');
+            if (targetId === '#' || targetId === '#!') return;
+            
+            e.preventDefault();
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                const headerHeight = document.querySelector('.header')?.offsetHeight || 80;
+                const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+                
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // ========== Contact Form Handling ==========
+    const contactForm = document.querySelector('.contact-form');
+    if (contactForm) {
+        contactForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.textContent;
+            
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Sending...';
+                
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                this.reset();
+                showFormMessage('Message sent successfully!', 'success');
+            } catch (error) {
+                showFormMessage('Failed to send message. Please try again.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
+            }
+        });
+        
+        function showFormMessage(message, type) {
+            const existingMsg = contactForm.querySelector('.form-message');
+            if (existingMsg) existingMsg.remove();
+            
+            const msgElement = document.createElement('div');
+            msgElement.className = `form-message ${type}`;
+            msgElement.textContent = message;
+            
+            const submitBtn = contactForm.querySelector('button[type="submit"]');
+            contactForm.insertBefore(msgElement, submitBtn);
+            
+            setTimeout(() => {
+                msgElement.classList.add('fade-out');
+                setTimeout(() => msgElement.remove(), 500);
+            }, 5000);
+        }
     }
+
+    // ========== ScrollReveal Animations ==========
+    const sr = ScrollReveal({
+        origin: 'bottom',
+        distance: '60px',
+        duration: 1000,
+        delay: 200,
+        reset: false
+    });
+
+    // Hero section
+    sr.reveal('.hero-title', { delay: 300 });
+    sr.reveal('.hero-subtitle', { delay: 500 });
+    sr.reveal('.btn', { delay: 700 });
+
+    // About section
+    sr.reveal('.about-img', { origin: 'left' });
+    sr.reveal('.about-text h3', { delay: 300 });
+    sr.reveal('.about-text p', { delay: 400, interval: 100 });
+    sr.reveal('.skills h4', { delay: 500 });
+    sr.reveal('.skills li', { delay: 600, interval: 100 });
+
+    // Contact section
+    sr.reveal('.contact-item', { interval: 200 });
+    sr.reveal('.social-links a', { interval: 100 });
+    sr.reveal('.form-group', { interval: 150 });
+
+    // Footer
+    sr.reveal('.footer-logo p', { delay: 300 });
+    sr.reveal('.footer-links h4', { delay: 400 });
+    sr.reveal('.footer-links li', { delay: 500, interval: 100 });
+    sr.reveal('.footer-bottom p', { delay: 600 });
+    sr.reveal('.footer-social a', { delay: 700, interval: 100 });
 });
