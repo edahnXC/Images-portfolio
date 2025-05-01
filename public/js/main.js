@@ -26,7 +26,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Close mobile menu when clicking on a link
         document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', () => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.querySelector(link.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
                 hamburger.classList.remove('active');
                 navLinks.classList.remove('active');
             });
@@ -119,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ======================
-    // Gallery Functionality
+    // Gallery Functionality (Fixed Version)
     // ======================
     function initializeGallery() {
         const galleryGrid = document.querySelector('.gallery-grid');
@@ -133,12 +138,6 @@ document.addEventListener('DOMContentLoaded', function() {
             <p>Loading images...</p>
         `;
         galleryGrid.appendChild(loadingState);
-
-        // Check if LightGallery is loaded
-        if (typeof lightGallery === 'undefined') {
-            showGalleryError('Gallery functionality not fully loaded. Please refresh the page.');
-            return;
-        }
 
         // Fetch images from server
         fetch('/api/images')
@@ -180,14 +179,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     galleryGrid.appendChild(galleryItem);
                 });
 
-                // Initialize LightGallery
-                lightGallery(galleryGrid, {
-                    selector: '.gallery-image',
-                    download: false,
-                    zoom: true,
-                    counter: false,
-                    fullScreen: true
-                });
+                // Check if LightGallery is loaded
+                if (typeof lightGallery !== 'undefined') {
+                    lightGallery(galleryGrid, {
+                        selector: '.gallery-image',
+                        download: false,
+                        zoom: true,
+                        counter: false,
+                        fullScreen: true,
+                        licenseKey: '0000-0000-000-0000' // For development only
+                    });
+                } else {
+                    console.warn('LightGallery not loaded, using fallback behavior');
+                    // Fallback behavior - make images clickable to view full size
+                    galleryGrid.querySelectorAll('.gallery-image').forEach(img => {
+                        img.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            window.open(img.getAttribute('href'), '_blank');
+                        });
+                    });
+                }
             })
             .catch(error => {
                 console.error('Gallery error:', error);
@@ -203,9 +214,14 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="error-message">
                 <p>${message}</p>
                 ${message.includes('No images') ? '<p>Please upload images to the server</p>' : ''}
-                <button onclick="window.location.reload()" class="btn btn-primary">Try Again</button>
+                <button class="btn btn-primary" id="retry-button">Try Again</button>
             </div>
         `;
+
+        // Add event listener properly (not inline)
+        document.getElementById('retry-button')?.addEventListener('click', () => {
+            window.location.reload();
+        });
     }
 
     // Initialize gallery after slight delay
@@ -295,33 +311,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const scrollDown = document.querySelector('.scroll-down');
             if (scrollDown) {
                 scrollDown.classList.add('animated');
+                // Add proper event listener (not inline)
+                scrollDown.addEventListener('click', () => {
+                    document.querySelector('#gallery')?.scrollIntoView({ behavior: 'smooth' });
+                });
             }
         }, 1500);
     }
-
-    // ======================
-    // Error Handling for Missing Elements
-    // ======================
-    function checkEssentialElements() {
-        const essentialSelectors = [
-            '.hero-title',
-            '.gallery-grid',
-            '#contactForm',
-            '.footer'
-        ];
-
-        essentialSelectors.forEach(selector => {
-            if (!document.querySelector(selector)) {
-                console.warn(`Essential element not found: ${selector}`);
-            }
-        });
-    }
-
-    // Run check after all initialization
-    setTimeout(checkEssentialElements, 2000);
 });
-
-// Make the reload function available globally for error messages
-window.reloadPage = function() {
-    window.location.reload();
-};
