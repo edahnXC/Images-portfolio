@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Preloader
     const preloader = document.querySelector('.preloader');
     if (preloader) {
@@ -13,14 +13,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Mobile Navigation
     const hamburger = document.querySelector('.hamburger');
     const navLinks = document.querySelector('.nav-links');
-    
+
     if (hamburger && navLinks) {
         hamburger.addEventListener('click', () => {
             hamburger.classList.toggle('active');
             navLinks.classList.toggle('active');
         });
 
-        // Close mobile menu when clicking on a link
         document.querySelectorAll('.nav-links a').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -38,11 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const header = document.querySelector('.header');
     if (header) {
         window.addEventListener('scroll', () => {
-            if (window.scrollY > 100) {
-                header.classList.add('scrolled');
-            } else {
-                header.classList.remove('scrolled');
-            }
+            header.classList.toggle('scrolled', window.scrollY > 100);
         });
     }
 
@@ -50,38 +45,29 @@ document.addEventListener('DOMContentLoaded', function() {
     const backToTop = document.getElementById('backToTop');
     if (backToTop) {
         window.addEventListener('scroll', () => {
-            if (window.scrollY > 300) {
-                backToTop.classList.add('active');
-            } else {
-                backToTop.classList.remove('active');
-            }
+            backToTop.classList.toggle('active', window.scrollY > 300);
         });
 
         backToTop.addEventListener('click', (e) => {
             e.preventDefault();
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+    // Scroll Buttons
+    const scrollTargets = {
+        viewPortfolioBtn: '#gallery',
+        scrollDown: '#gallery'
+    };
+
+    for (const [btnId, targetSelector] of Object.entries(scrollTargets)) {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelector(targetSelector)?.scrollIntoView({ behavior: 'smooth' });
             });
-        });
-    }
-
-    // View Portfolio Button
-    const viewPortfolioBtn = document.getElementById('viewPortfolioBtn');
-    if (viewPortfolioBtn) {
-        viewPortfolioBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            document.querySelector('#gallery')?.scrollIntoView({ behavior: 'smooth' });
-        });
-    }
-
-    // Scroll Down Button
-    const scrollDown = document.getElementById('scrollDown');
-    if (scrollDown) {
-        scrollDown.addEventListener('click', (e) => {
-            e.preventDefault();
-            document.querySelector('#gallery')?.scrollIntoView({ behavior: 'smooth' });
-        });
+        }
     }
 
     // Scroll Reveal Animations
@@ -94,32 +80,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 delay: 200
             });
 
-            sr.reveal('.animate-text', {
-                origin: 'bottom',
-                interval: 100
-            });
-
-            sr.reveal('.hero-title', {
-                delay: 300,
-                distance: '60px'
-            });
-
-            sr.reveal('.hero-subtitle', {
-                delay: 500,
-                distance: '40px'
-            });
-
-            sr.reveal('.btn-primary', {
-                delay: 700,
-                distance: '40px'
-            });
+            sr.reveal('.animate-text', { origin: 'bottom', interval: 100 });
+            sr.reveal('.hero-title', { delay: 300, distance: '60px' });
+            sr.reveal('.hero-subtitle', { delay: 500, distance: '40px' });
+            sr.reveal('.btn-primary', { delay: 700, distance: '40px' });
 
             return true;
         }
         return false;
     }
 
-    // Initialize with fallback
     if (!initializeScrollReveal()) {
         setTimeout(() => {
             document.querySelectorAll('.animate-text').forEach(el => {
@@ -134,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const galleryGrid = document.querySelector('.gallery-grid');
         if (!galleryGrid) return;
 
-        // Show loading state initially
+        // Show loading state
         const loadingState = document.createElement('div');
         loadingState.className = 'loading-state';
         loadingState.innerHTML = `
@@ -143,33 +113,30 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         galleryGrid.appendChild(loadingState);
 
-        // Fetch images from server
+        // Fetch images
         fetch('/api/images')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
+            .then(res => {
+                if (!res.ok) throw new Error('Failed to fetch images');
+                return res.json();
             })
             .then(data => {
                 if (!data.success || !data.images || data.images.length === 0) {
-                    throw new Error(data.message || 'No images available');
+                    throw new Error(data.message || 'No images found');
                 }
 
-                // Clear loading state
                 galleryGrid.innerHTML = '';
 
-                // Create gallery items
                 data.images.forEach((image, index) => {
-                    const galleryItem = document.createElement('div');
-                    galleryItem.className = 'gallery-item animate-text';
-                    galleryItem.style.transitionDelay = `${index * 0.1}s`;
+                    if (!image.url) return; // Skip broken images
 
-                    // Generate title from filename
                     const title = image.filename
                         .replace(/\.[^/.]+$/, '')
                         .replace(/[^a-zA-Z ]/g, ' ')
                         .replace(/\b\w/g, l => l.toUpperCase());
+
+                    const galleryItem = document.createElement('div');
+                    galleryItem.className = 'gallery-item animate-text';
+                    galleryItem.style.transitionDelay = `${index * 0.1}s`;
 
                     galleryItem.innerHTML = `
                         <div class="gallery-image-container">
@@ -183,9 +150,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     galleryGrid.appendChild(galleryItem);
                 });
             })
-            .catch(error => {
-                console.error('Gallery error:', error);
-                showGalleryError(error.message || 'Could not load gallery. Please try again later.');
+            .catch(err => {
+                console.error('Gallery error:', err);
+                showGalleryError(err.message);
             });
     }
 
@@ -206,48 +173,43 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Initialize gallery after slight delay
     setTimeout(initializeGallery, 1500);
 
-    // Contact Form Handling
+    // Contact Form
     const contactForm = document.getElementById('contactForm');
     if (contactForm) {
         contactForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const submitButton = contactForm.querySelector('button[type="submit"]');
-            const originalButtonText = submitButton.textContent;
+            const originalText = submitButton.textContent;
+            const formMessage = document.getElementById('form-message');
+            const formData = new FormData(contactForm);
+
             submitButton.textContent = 'Sending...';
             submitButton.disabled = true;
-            
-            const formData = new FormData(contactForm);
-            const formMessage = document.getElementById('form-message');
-            
+
             try {
                 const response = await fetch(contactForm.action, {
                     method: 'POST',
                     body: formData,
-                    headers: {
-                        'Accept': 'application/json'
-                    }
+                    headers: { 'Accept': 'application/json' }
                 });
-                
+
                 if (response.ok) {
                     formMessage.textContent = 'Message sent successfully!';
                     formMessage.classList.add('success');
                     contactForm.reset();
                 } else {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Form submission failed');
+                    const errData = await response.json();
+                    throw new Error(errData.error || 'Failed to send message');
                 }
             } catch (error) {
-                formMessage.textContent = error.message || 'Error sending message. Please try again.';
+                console.error('Contact form error:', error);
+                formMessage.textContent = error.message;
                 formMessage.classList.add('error');
-                console.error('Form error:', error);
             } finally {
-                submitButton.textContent = originalButtonText;
+                submitButton.textContent = originalText;
                 submitButton.disabled = false;
-                
                 setTimeout(() => {
                     formMessage.textContent = '';
                     formMessage.classList.remove('success', 'error');
@@ -256,16 +218,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Current Year in Footer
+    // Footer Year
     const yearElement = document.getElementById('year');
     if (yearElement) {
         yearElement.textContent = new Date().getFullYear();
     }
 
-    // Section Title Animations
+    // Animate Section Titles
     const sectionTitles = document.querySelectorAll('.section-title');
     if (sectionTitles.length > 0) {
-        const observer = new IntersectionObserver((entries) => {
+        const observer = new IntersectionObserver(entries => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('animated');
@@ -273,19 +235,15 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }, { threshold: 0.5 });
 
-        sectionTitles.forEach(title => {
-            observer.observe(title);
-        });
+        sectionTitles.forEach(title => observer.observe(title));
     }
 
-    // Hero Scroll Down Arrow
+    // Animate Hero Arrow
     const heroTitle = document.querySelector('.hero-title');
     if (heroTitle) {
         setTimeout(() => {
             const scrollDown = document.getElementById('scrollDown');
-            if (scrollDown) {
-                scrollDown.classList.add('animated');
-            }
+            if (scrollDown) scrollDown.classList.add('animated');
         }, 1500);
     }
 });

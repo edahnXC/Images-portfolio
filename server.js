@@ -1,3 +1,4 @@
+// server.js
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -24,9 +25,9 @@ app.use(helmet({
             scriptSrc: [
                 "'self'", 
                 "https://cdn.jsdelivr.net",
-                "'unsafe-eval'" // Needed for ScrollReveal
+                "'unsafe-eval'"
             ],
-            scriptSrcAttr: ["'self'"], // Allow inline event handlers
+            scriptSrcAttr: ["'self'"],
             styleSrc: [
                 "'self'", 
                 "https://cdn.jsdelivr.net", 
@@ -45,18 +46,18 @@ app.use(helmet({
                 "'self'", 
                 "data:", 
                 "https://via.placeholder.com",
-                "https:" // Allow all HTTPS images
+                "https:"
             ],
             connectSrc: [
                 "'self'",
-                "https://formspree.io" // For contact form
+                "https://formspree.io"
             ],
             frameSrc: ["'none'"],
             objectSrc: ["'none'"],
             workerSrc: ["'self'"]
         }
     },
-    crossOriginEmbedderPolicy: false // Needed for some external resources
+    crossOriginEmbedderPolicy: false
 }));
 
 app.use(cors({
@@ -78,7 +79,7 @@ if (NODE_ENV === 'development') {
     if (!fs.existsSync(logsDir)) {
         fs.mkdirSync(logsDir);
     }
-    
+
     const accessLogStream = fs.createWriteStream(
         path.join(logsDir, 'access.log'),
         { flags: 'a' }
@@ -116,13 +117,13 @@ app.get('/api/images', async (req, res) => {
     try {
         const files = await fs.promises.readdir(IMAGE_DIR);
         const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-        
+
         const images = files
             .filter(file => validExtensions.includes(path.extname(file).toLowerCase()))
             .map(file => {
                 const filePath = path.join(IMAGE_DIR, file);
                 const stats = fs.statSync(filePath);
-                
+
                 return {
                     filename: file,
                     url: `/images/${file}`,
@@ -131,7 +132,7 @@ app.get('/api/images', async (req, res) => {
                     size: stats.size
                 };
             });
-        
+
         if (!images.length) {
             return res.status(404).json({
                 success: false,
@@ -140,8 +141,7 @@ app.get('/api/images', async (req, res) => {
             });
         }
 
-        // Sort by newest first
-        const sortedImages = images.sort((a, b) => 
+        const sortedImages = images.sort((a, b) =>
             new Date(b.timestamp) - new Date(a.timestamp)
         );
 
@@ -153,7 +153,7 @@ app.get('/api/images', async (req, res) => {
         });
     } catch (error) {
         console.error('API Error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
             error: 'Failed to load gallery'
         });
@@ -178,12 +178,7 @@ app.get('*', (req, res) => {
 
 // Server Startup
 const server = app.listen(PORT, () => {
-    console.log(`
-    Server running in ${NODE_ENV} mode
-    Local: http://localhost:${PORT}
-    Images directory: ${IMAGE_DIR}
-    Images available: ${fs.readdirSync(IMAGE_DIR).length}
-    `);
+    console.log(`\nServer running in ${NODE_ENV} mode\nLocal: http://localhost:${PORT}\nImages directory: ${IMAGE_DIR}\nImages available: ${fs.readdirSync(IMAGE_DIR).length}`);
 });
 
 // Graceful Shutdown
