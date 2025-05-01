@@ -21,9 +21,11 @@ app.use(helmet({
             defaultSrc: ["'self'"],
             scriptSrc: ["'self'", "https://cdn.jsdelivr.net", "https://unpkg.com"],
             styleSrc: ["'self'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com", "'unsafe-inline'"],
-            fontSrc: ["'self'", "https://fonts.gstatic.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "data:"],
             imgSrc: ["'self'", "data:", "https://via.placeholder.com"],
-            connectSrc: ["'self'"]
+            connectSrc: ["'self'", "https://images-portfolio-wp42.onrender.com"],
+            frameSrc: ["'none'"],
+            objectSrc: ["'none'"]
         }
     }
 }));
