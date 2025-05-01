@@ -154,35 +154,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         .replace(/\b\w/g, l => l.toUpperCase());
 
                     galleryItem.innerHTML = `
-                        <a href="${image.url}" data-lg-size="1600-2400" class="gallery-image">
+                        <div class="gallery-image-container">
                             <img src="${image.url}" alt="${title || 'Photograph'}" loading="lazy" />
                             <div class="item-info">
                                 <h3>${title || 'Untitled'}</h3>
                                 <p>Photograph captured on iPhone XR</p>
                             </div>
-                        </a>
+                        </div>
                     `;
                     galleryGrid.appendChild(galleryItem);
                 });
-
-                // Initialize LightGallery if available
-                if (typeof lightGallery !== 'undefined') {
-                    lightGallery(galleryGrid, {
-                        selector: '.gallery-image',
-                        download: false,
-                        zoom: true,
-                        counter: false,
-                        fullScreen: true
-                    });
-                } else {
-                    console.warn('LightGallery not loaded, using fallback behavior');
-                    galleryGrid.querySelectorAll('.gallery-image').forEach(img => {
-                        img.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            window.open(img.getAttribute('href'), '_blank');
-                        });
-                    });
-                }
             })
             .catch(error => {
                 console.error('Gallery error:', error);

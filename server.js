@@ -9,6 +9,9 @@ const morgan = require('morgan');
 
 const app = express();
 
+// Enable trust proxy for Render.com
+app.set('trust proxy', 1);
+
 // Configuration
 const PORT = process.env.PORT || 5500;
 const NODE_ENV = process.env.NODE_ENV || 'development';
@@ -18,14 +21,13 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "https://cdn.jsdelivr.net", "https://unpkg.com"],
+            scriptSrc: ["'self'", "https://cdn.jsdelivr.net"],
             styleSrc: ["'self'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com", "'unsafe-inline'"],
             fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "data:"],
-            imgSrc: ["'self'", "data:", "https://via.placeholder.com", "https://images-portfolio-wp42.onrender.com"],
+            imgSrc: ["'self'", "data:", "https://via.placeholder.com"],
             connectSrc: ["'self'"],
             frameSrc: ["'none'"],
-            objectSrc: ["'none'"],
-            workerSrc: ["'self'", "blob:"]
+            objectSrc: ["'none'"]
         }
     }
 }));
