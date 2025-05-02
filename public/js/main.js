@@ -10,53 +10,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 500);
         });
     }
-
-    // ========== Mobile Form View Handling ==========
-    function setupMobileFormView() {
-        const contactForm = document.querySelector('.contact-form');
-        if (!contactForm) return;
-
-        // Handle keyboard appearance on mobile
-        const handleInputFocus = () => {
-            setTimeout(() => {
-                const viewportHeight = window.innerHeight;
-                const formRect = contactForm.getBoundingClientRect();
-                
-                // Only scroll if form bottom is within 50px of viewport bottom
-                if (formRect.bottom > viewportHeight - 50) {
-                    contactForm.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'nearest'
-                    });
-                }
-            }, 100);
-        };
-
-        // Set up event listeners for all form inputs
-        const formInputs = contactForm.querySelectorAll('input, textarea, select');
-        formInputs.forEach(input => {
-            input.addEventListener('focus', handleInputFocus);
-        });
-
-        // Additional safety check on resize
-        const checkViewport = () => {
-            if (window.innerHeight < 500) { // Likely keyboard is open
-                handleInputFocus();
-            }
-        };
-
-        window.addEventListener('resize', checkViewport);
-        return () => {
-            formInputs.forEach(input => {
-                input.removeEventListener('focus', handleInputFocus);
-            });
-            window.removeEventListener('resize', checkViewport);
-        };
+window.addEventListener('resize', function() {
+    if (window.innerHeight < 500) { // When keyboard is open
+      document.querySelector('.contact-form')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
     }
-
-    // Initialize mobile form handling
-    const cleanupMobileForm = setupMobileFormView();
-
+  });
     // ========== Mobile Navigation ==========
     const hamburger = document.querySelector('.hamburger');
     const navLinks = document.querySelector('.nav-links');
@@ -204,9 +165,4 @@ document.addEventListener('DOMContentLoaded', function() {
         sr.reveal('.footer-bottom p', { delay: 600 });
         sr.reveal('.footer-social a', { delay: 700, interval: 100 });
     }
-
-    // Cleanup function for mobile form handling
-    window.addEventListener('beforeunload', () => {
-        if (cleanupMobileForm) cleanupMobileForm();
-    });
 });

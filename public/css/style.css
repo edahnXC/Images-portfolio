@@ -797,37 +797,7 @@ section {
         font-size: 2.8rem;
     }
 }
-/* Add this to ensure form stays visible */
-/* Mobile Form Fixes */
-@media (max-width: 768px) {
-    .contact-form {
-      position: relative;
-      z-index: 1;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      margin-bottom: max(20px, env(safe-area-inset-bottom));
-    }
-  
-    .contact-form button[type="submit"] {
-      position: relative !important;
-      bottom: auto !important;
-      width: 100%;
-      padding: 15px;
-      margin: 25px 0 15px;
-      font-size: 16px;
-    }
-  
-    body {
-      padding-bottom: env(safe-area-inset-bottom);
-    }
-  
-    .contact {
-      min-height: calc(100vh - 120px);
-      padding-bottom: env(safe-area-inset-bottom);
-    }
-  }
+
 @media (max-width: 992px) {
     .hero-title {
         font-size: 3rem;
