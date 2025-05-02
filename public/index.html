@@ -10,7 +10,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.1/css/lightgallery.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 </head>
 <body>
@@ -61,28 +60,40 @@
             <h2 class="section-title">My <span>Work</span></h2>
             <p class="section-subtitle">A collection of my finest photographs</p>
             
-            <div class="gallery-carousel">
-                <button class="carousel-btn prev-btn" aria-label="Previous">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                
-                <div class="carousel-container">
-                    <div class="carousel-track">
-                        <!-- Images will be added dynamically via JS -->
-                        <div class="loading-state">
-                            <div class="loader"></div>
-                            <p>Loading images...</p>
-                        </div>
-                    </div>
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="images/BackPain.jpeg" alt="Back Pain photography" loading="lazy">
                 </div>
-                
-                <button class="carousel-btn next-btn" aria-label="Next">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-            </div>
-            
-            <div class="carousel-dots">
-                <!-- Dots will be added dynamically via JS -->
+                <div class="gallery-item">
+                    <img src="images/Cloud.jpeg" alt="Cloud photography" loading="lazy">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/default-profile.jpeg" alt="Default profile" loading="lazy">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/exit.jpeg" alt="Exit photography" loading="lazy">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/lord.jpeg" alt="Lord photography" loading="lazy">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/patience.jpeg" alt="Patience photography" loading="lazy">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/pattern.jpeg" alt="Pattern photography" loading="lazy">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/silence.jpeg" alt="Silence photography" loading="lazy">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/Tower.jpeg" alt="Tower photography" loading="lazy">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/vehicles.jpeg" alt="Vehicles photography" loading="lazy">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/what.jpeg" alt="What photography" loading="lazy">
+                </div>
             </div>
         </div>
     </section>
@@ -216,9 +227,6 @@
     <a href="#" class="back-to-top"><i class="fas fa-arrow-up"></i></a>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.1/lightgallery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.1/plugins/zoom/lg-zoom.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.1/plugins/fullscreen/lg-fullscreen.min.js"></script>
     <script src="https://unpkg.com/scrollreveal"></script>
     <script src="js/main.js"></script>
 </body>

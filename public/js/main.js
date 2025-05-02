@@ -60,240 +60,6 @@ document.addEventListener('DOMContentLoaded', function() {
         yearElement.textContent = new Date().getFullYear();
     }
 
-    // ========== Gallery Carousel Functionality ==========
-    const galleryCarousel = document.querySelector('.gallery-carousel');
-    if (galleryCarousel) {
-        loadGalleryImages();
-        
-        async function loadGalleryImages() {
-            try {
-                const loadingState = document.querySelector('.loading-state');
-                if (loadingState) {
-                    loadingState.style.display = 'flex';
-                }
-                
-                // Use fallback images if API fails
-                const fallbackImages = [
-                    { path: 'https://source.unsplash.com/random/800x800/?photography,portrait', alt: 'Fallback image 1' },
-                    { path: 'https://source.unsplash.com/random/800x800/?nature,landscape', alt: 'Fallback image 2' },
-                    { path: 'https://source.unsplash.com/random/800x800/?city,urban', alt: 'Fallback image 3' },
-                    { path: 'https://source.unsplash.com/random/800x800/?street,photography', alt: 'Fallback image 4' },
-                    { path: 'https://source.unsplash.com/random/800x800/?blackandwhite', alt: 'Fallback image 5' },
-                    { path: 'https://source.unsplash.com/random/800x800/?art,creative', alt: 'Fallback image 6' }
-                ];
-                
-                let images = fallbackImages;
-                
-                try {
-                    const response = await fetch('/api/images');
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.images && data.images.length > 0) {
-                            images = data.images;
-                        }
-                    }
-                } catch (error) {
-                    console.log('Using fallback images due to API error:', error);
-                }
-                
-                if (loadingState) {
-                    loadingState.style.display = 'none';
-                }
-                
-                if (images.length === 0) {
-                    showNoImagesMessage();
-                    return;
-                }
-                
-                initCarousel(images);
-                
-            } catch (error) {
-                console.error('Error loading gallery images:', error);
-                showNoImagesMessage();
-                
-                const loadingState = document.querySelector('.loading-state');
-                if (loadingState) {
-                    loadingState.innerHTML = `
-                        <div class="error-state">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <p>Failed to load images. Please try again later.</p>
-                        </div>
-                    `;
-                }
-            }
-        }
-        
-        function initCarousel(images) {
-            const carouselContainer = document.querySelector('.carousel-container');
-            const carouselTrack = document.querySelector('.carousel-track');
-            const prevBtn = document.querySelector('.prev-btn');
-            const nextBtn = document.querySelector('.next-btn');
-            const dotsContainer = document.querySelector('.carousel-dots');
-            
-            let currentIndex = 0;
-            let slides = [];
-            let autoSlideInterval;
-            
-            // Group images into slides (3 per slide)
-            for (let i = 0; i < images.length; i += 3) {
-                slides.push(images.slice(i, i + 3));
-            }
-            
-            // Create carousel slides
-            function createSlides() {
-                carouselTrack.innerHTML = '';
-                dotsContainer.innerHTML = '';
-                
-                slides.forEach((slide, index) => {
-                    // Create slide
-                    const slideElement = document.createElement('div');
-                    slideElement.className = 'carousel-slide';
-                    
-                    // Create items for this slide
-                    slide.forEach((image, imgIndex) => {
-                        const item = document.createElement('div');
-                        item.className = 'carousel-item';
-                        item.innerHTML = `
-                            <a href="${image.path}" data-lg-size="1600-1600" class="gallery-image">
-                                <img src="${image.path}" 
-                                     alt="${image.alt || 'Photography by Om Kumar'}" 
-                                     loading="lazy"
-                                     onerror="this.src='https://via.placeholder.com/800x800?text=Image+Not+Available'">
-                            </a>
-                        `;
-                        slideElement.appendChild(item);
-                    });
-                    
-                    carouselTrack.appendChild(slideElement);
-                    
-                    // Create dot
-                    const dot = document.createElement('div');
-                    dot.className = 'carousel-dot';
-                    if (index === 0) dot.classList.add('active');
-                    dot.addEventListener('click', () => goToSlide(index));
-                    dotsContainer.appendChild(dot);
-                });
-                
-                // Initialize lightGallery
-                initLightGallery();
-                
-                // Set initial position
-                updateCarousel();
-                
-                // Activate first slide items
-                setTimeout(() => {
-                    const firstSlideItems = document.querySelectorAll('.carousel-slide:first-child .carousel-item');
-                    firstSlideItems.forEach(item => item.classList.add('active'));
-                }, 100);
-            }
-            
-            function updateCarousel() {
-                if (!carouselTrack) return;
-                
-                carouselTrack.style.transform = `translateX(-${currentIndex * 100}%)`;
-                
-                // Update dots
-                const dots = document.querySelectorAll('.carousel-dot');
-                if (dots) {
-                    dots.forEach((dot, index) => {
-                        dot.classList.toggle('active', index === currentIndex);
-                    });
-                }
-                
-                // Update slide items animation
-                document.querySelectorAll('.carousel-item').forEach(item => item.classList.remove('active'));
-                const activeSlideItems = document.querySelectorAll(`.carousel-slide:nth-child(${currentIndex + 1}) .carousel-item`);
-                if (activeSlideItems) {
-                    activeSlideItems.forEach((item, i) => {
-                        setTimeout(() => {
-                            item.classList.add('active');
-                        }, i * 200);
-                    });
-                }
-            }
-            
-            function goToSlide(index) {
-                if (index < 0 || index >= slides.length) return;
-                currentIndex = index;
-                updateCarousel();
-                resetAutoSlide();
-            }
-            
-            function nextSlide() {
-                currentIndex = (currentIndex + 1) % slides.length;
-                updateCarousel();
-                resetAutoSlide();
-            }
-            
-            function prevSlide() {
-                currentIndex = (currentIndex - 1 + slides.length) % slides.length;
-                updateCarousel();
-                resetAutoSlide();
-            }
-            
-            function startAutoSlide() {
-                if (slides.length > 1) {
-                    autoSlideInterval = setInterval(nextSlide, 5000);
-                }
-            }
-            
-            function resetAutoSlide() {
-                clearInterval(autoSlideInterval);
-                startAutoSlide();
-            }
-            
-            // Event listeners
-            if (nextBtn) nextBtn.addEventListener('click', nextSlide);
-            if (prevBtn) prevBtn.addEventListener('click', prevSlide);
-            
-            // Keyboard navigation
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'ArrowRight') nextSlide();
-                if (e.key === 'ArrowLeft') prevSlide();
-            });
-            
-            // Initialize
-            createSlides();
-            startAutoSlide();
-            
-            // Handle window resize
-            window.addEventListener('resize', () => {
-                updateCarousel();
-            });
-        }
-        
-        function initLightGallery() {
-            if (typeof lightGallery !== 'undefined') {
-                const galleryElement = document.querySelector('.carousel-track');
-                if (galleryElement) {
-                    lightGallery(galleryElement, {
-                        selector: '.gallery-image',
-                        download: false,
-                        zoom: true,
-                        counter: false,
-                        showAfterLoad: true,
-                        hideBarsDelay: 2000
-                    });
-                }
-            }
-        }
-        
-        function showNoImagesMessage() {
-            const carouselContainer = document.querySelector('.carousel-container');
-            if (carouselContainer) {
-                carouselContainer.innerHTML = `
-                    <div class="no-images-message">
-                        <h3>Photos coming soon!</h3>
-                        <p>Check back later or follow me on Instagram for updates</p>
-                        <a href="https://www.instagram.com/captured.by.om/" target="_blank" class="btn btn-primary">
-                            <i class="fab fa-instagram"></i> Follow on Instagram
-                        </a>
-                    </div>
-                `;
-            }
-        }
-    }
-
     // ========== Smooth Scrolling ==========
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
@@ -359,35 +125,37 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ========== ScrollReveal Animations ==========
-    const sr = ScrollReveal({
-        origin: 'bottom',
-        distance: '60px',
-        duration: 1000,
-        delay: 200,
-        reset: false
-    });
+    if (typeof ScrollReveal !== 'undefined') {
+        const sr = ScrollReveal({
+            origin: 'bottom',
+            distance: '60px',
+            duration: 1000,
+            delay: 200,
+            reset: false
+        });
 
-    // Hero section
-    sr.reveal('.hero-title', { delay: 300 });
-    sr.reveal('.hero-subtitle', { delay: 500 });
-    sr.reveal('.btn', { delay: 700 });
+        // Hero section
+        sr.reveal('.hero-title', { delay: 300 });
+        sr.reveal('.hero-subtitle', { delay: 500 });
+        sr.reveal('.btn', { delay: 700 });
 
-    // About section
-    sr.reveal('.about-img', { origin: 'left' });
-    sr.reveal('.about-text h3', { delay: 300 });
-    sr.reveal('.about-text p', { delay: 400, interval: 100 });
-    sr.reveal('.skills h4', { delay: 500 });
-    sr.reveal('.skills li', { delay: 600, interval: 100 });
+        // About section
+        sr.reveal('.about-img', { origin: 'left' });
+        sr.reveal('.about-text h3', { delay: 300 });
+        sr.reveal('.about-text p', { delay: 400, interval: 100 });
+        sr.reveal('.skills h4', { delay: 500 });
+        sr.reveal('.skills li', { delay: 600, interval: 100 });
 
-    // Contact section
-    sr.reveal('.contact-item', { interval: 200 });
-    sr.reveal('.social-links a', { interval: 100 });
-    sr.reveal('.form-group', { interval: 150 });
+        // Contact section
+        sr.reveal('.contact-item', { interval: 200 });
+        sr.reveal('.social-links a', { interval: 100 });
+        sr.reveal('.form-group', { interval: 150 });
 
-    // Footer
-    sr.reveal('.footer-logo p', { delay: 300 });
-    sr.reveal('.footer-links h4', { delay: 400 });
-    sr.reveal('.footer-links li', { delay: 500, interval: 100 });
-    sr.reveal('.footer-bottom p', { delay: 600 });
-    sr.reveal('.footer-social a', { delay: 700, interval: 100 });
+        // Footer
+        sr.reveal('.footer-logo p', { delay: 300 });
+        sr.reveal('.footer-links h4', { delay: 400 });
+        sr.reveal('.footer-links li', { delay: 500, interval: 100 });
+        sr.reveal('.footer-bottom p', { delay: 600 });
+        sr.reveal('.footer-social a', { delay: 700, interval: 100 });
+    }
 });
