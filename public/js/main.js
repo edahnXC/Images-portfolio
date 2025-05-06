@@ -10,14 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 500);
         });
     }
-window.addEventListener('resize', function() {
-    if (window.innerHeight < 500) { // When keyboard is open
-      document.querySelector('.contact-form')?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-      });
-    }
-  });
+
     // ========== Mobile Navigation ==========
     const hamburger = document.querySelector('.hamburger');
     const navLinks = document.querySelector('.nav-links');
@@ -131,6 +124,26 @@ window.addEventListener('resize', function() {
         }
     }
 
+    // ========== Project Card Animations ==========
+    const projectCards = document.querySelectorAll('.project-card');
+    if (projectCards.length > 0) {
+        const projectObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animated');
+                    projectObserver.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        });
+
+        projectCards.forEach(card => {
+            projectObserver.observe(card);
+        });
+    }
+
     // ========== ScrollReveal Animations ==========
     if (typeof ScrollReveal !== 'undefined') {
         const sr = ScrollReveal({
@@ -153,6 +166,18 @@ window.addEventListener('resize', function() {
         sr.reveal('.skills h4', { delay: 500 });
         sr.reveal('.skills li', { delay: 600, interval: 100 });
 
+        // Projects section
+        sr.reveal('.projects .section-title', { delay: 200 });
+        sr.reveal('.projects .section-subtitle', { delay: 300 });
+        sr.reveal('.project-card', { 
+            interval: 200,
+            origin: 'bottom',
+            distance: '50px',
+            duration: 800,
+            easing: 'cubic-bezier(0.5, 0, 0, 1)',
+            viewFactor: 0.1
+        });
+
         // Contact section
         sr.reveal('.contact-item', { interval: 200 });
         sr.reveal('.social-links a', { interval: 100 });
@@ -165,4 +190,53 @@ window.addEventListener('resize', function() {
         sr.reveal('.footer-bottom p', { delay: 600 });
         sr.reveal('.footer-social a', { delay: 700, interval: 100 });
     }
+
+    // ========== Keyboard Handling for Contact Form ==========
+    window.addEventListener('resize', function() {
+        if (window.innerHeight < 500) { // When keyboard is open
+            document.querySelector('.contact-form')?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+    });
+
+    // ========== Animate Section Titles ==========
+    const sectionTitles = document.querySelectorAll('.section-title');
+    if (sectionTitles.length > 0) {
+        const titleObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animated');
+                    titleObserver.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.5
+        });
+
+        sectionTitles.forEach(title => {
+            titleObserver.observe(title);
+        });
+    }
+
+    // ========== Project Link Interactions ==========
+    document.querySelectorAll('.project-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent card click if needed
+            // You can add analytics tracking here if needed
+        });
+    });
+
+    // ========== Project Card Interactions ==========
+    document.querySelectorAll('.project-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            if (!e.target.closest('.project-link')) {
+                const link = this.querySelector('.project-link');
+                if (link) {
+                    window.open(link.href, '_blank');
+                }
+            }
+        });
+    });
 });
