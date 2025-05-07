@@ -81,48 +81,69 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // ========== Contact Form Handling ==========
-    const contactForm = document.querySelector('.contact-form');
-    if (contactForm) {
-        contactForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
+// ========== Contact Form Handling ==========
+const contactForm = document.getElementById('contact-form');
+if (contactForm) {
+    contactForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.textContent;
+        
+        try {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
             
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalBtnText = submitBtn.textContent;
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value
+            };
             
-            try {
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Sending...';
-                
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
+            // Replace with your Google Apps Script URL
+            const response = await fetch('https://script.google.com/macros/s/AKfycbyd6qI8SDRfaxoyah7GW26a3045t4ExgEa1VO_GtbIV4o5lOz38a-wNKcA2YdrjUwUi/exec', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
                 this.reset();
                 showFormMessage('Message sent successfully!', 'success');
-            } catch (error) {
-                showFormMessage('Failed to send message. Please try again.', 'error');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalBtnText;
+            } else {
+                throw new Error(result.message || 'Failed to send message');
             }
-        });
-        
-        function showFormMessage(message, type) {
-            const existingMsg = contactForm.querySelector('.form-message');
-            if (existingMsg) existingMsg.remove();
-            
-            const msgElement = document.createElement('div');
-            msgElement.className = `form-message ${type}`;
-            msgElement.textContent = message;
-            
-            const submitBtn = contactForm.querySelector('button[type="submit"]');
-            contactForm.insertBefore(msgElement, submitBtn);
-            
-            setTimeout(() => {
-                msgElement.classList.add('fade-out');
-                setTimeout(() => msgElement.remove(), 500);
-            }, 5000);
+        } catch (error) {
+            showFormMessage(error.message || 'Failed to send message. Please try again.', 'error');
+            console.error('Error:', error);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
         }
+    });
+    
+    function showFormMessage(message, type) {
+        const existingMsg = contactForm.querySelector('.form-message');
+        if (existingMsg) existingMsg.remove();
+        
+        const msgElement = document.createElement('div');
+        msgElement.className = `form-message ${type}`;
+        msgElement.textContent = message;
+        
+        const submitBtn = contactForm.querySelector('button[type="submit"]');
+        contactForm.insertBefore(msgElement, submitBtn);
+        
+        setTimeout(() => {
+            msgElement.classList.add('fade-out');
+            setTimeout(() => msgElement.remove(), 500);
+        }, 5000);
     }
+}
 
     // ========== Project Card Animations ==========
     const projectCards = document.querySelectorAll('.project-card');
