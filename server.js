@@ -5,33 +5,31 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 
 const app = express();
 
-// Enhanced CORS configuration
+// Middleware setup
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type'],
-  credentials: true
+  allowedHeaders: ['Content-Type']
 }));
 
-// Body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files
+// Serve static files from 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Contact form endpoint
+// API endpoint
 app.post('/api/contact', async (req, res) => {
   try {
-    // Validate request
+    // Validate required fields
     if (!req.body.name || !req.body.email || !req.body.message) {
-      return res.status(400).json({
-        success: false,
-        message: 'Name, email, and message are required'
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Name, email, and message are required' 
       });
     }
 
-    // Prepare data for Google Apps Script
+    // Prepare data
     const formData = {
       name: req.body.name.trim(),
       email: req.body.email.trim(),
@@ -40,47 +38,55 @@ app.post('/api/contact', async (req, res) => {
     };
 
     // Send to Google Apps Script
-    const response = await fetch('https://script.google.com/macros/s/AKfycbyjNr-a1DOWhjY_gcFjJtyf2cPh7gc3WnlFeA0ODAbibEDx9-VNwzNWc6IMq7HUXn5J/exec', {
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycbyjNr-a1DOWhjY_gcFjJtyf2cPh7gc3WnlFeA0ODAbibEDx9-VNwzNWc6IMq7HUXn5J/exec';
+    const response = await fetch(scriptUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData)
     });
 
-    // Parse response
-    const result = await response.json();
+    // Handle response
+    const textResponse = await response.text();
+    let result;
+    
+    try {
+      result = JSON.parse(textResponse);
+    } catch (e) {
+      console.error('Failed to parse response:', textResponse);
+      throw new Error('Invalid response from server');
+    }
 
-    // Forward response to client
     if (result.result === 'success') {
-      res.json({
-        success: true,
-        message: result.message || 'Message sent successfully!'
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        message: result.message || 'Failed to send message'
+      return res.json({ 
+        success: true, 
+        message: result.message || 'Message sent successfully!' 
       });
     }
+
+    return res.status(400).json({ 
+      success: false, 
+      message: result.message || 'Failed to send message' 
+    });
+
   } catch (error) {
     console.error('Contact form error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error'
+    return res.status(500).json({ 
+      success: false, 
+      message: error.message || 'Internal server error' 
     });
   }
 });
 
 // Handle preflight requests
-app.options('*', cors());
+app.options('/api/contact', cors());
 
-// SPA fallback
+// All other routes
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Start server
 const PORT = process.env.PORT || 5500;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });

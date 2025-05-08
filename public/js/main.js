@@ -81,128 +81,122 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-// ========== Contact Form Handling ==========
-const contactForm = document.getElementById('contact-form');
-if (contactForm) {
-    contactForm.addEventListener('submit', async function (e) {
-        e.preventDefault();
+    // ========== Contact Form Handling ==========
+    const contactForm = document.getElementById('contact-form');
+    if (contactForm) {
+        contactForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
 
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalBtnText = submitBtn.innerHTML;
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
 
-        // Validate form
-        if (!validateForm()) {
-            return;
-        }
+            if (!validateForm()) return;
 
-        try {
-            // Update button state
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `
-                <span class="btn-loading">
-                    <i class="fas fa-spinner fa-spin"></i> Sending...
-                </span>
-            `;
+            try {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `
+                    <span class="btn-loading">
+                        <i class="fas fa-spinner fa-spin"></i> Sending...
+                    </span>
+                `;
 
-            // Prepare form data
-            const formData = {
-                name: document.getElementById('name').value.trim(),
-                email: document.getElementById('email').value.trim(),
-                subject: document.getElementById('subject').value.trim() || 'No subject',
-                message: document.getElementById('message').value.trim()
-            };
+                const formData = {
+                    name: document.getElementById('name').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    subject: document.getElementById('subject').value.trim() || 'No subject',
+                    message: document.getElementById('message').value.trim()
+                };
 
-            // Send to server
-            const response = await fetch('/api/contact', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
-            });
+                const response = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
 
-            // Handle response
-            const result = await response.json();
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'Request failed');
+                }
 
-            if (!response.ok || !result.success) {
-                throw new Error(result.message || 'Failed to send message');
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Failed to send message');
+                }
+
+                this.reset();
+                showFormMessage(result.message || 'Message sent successfully!', 'success');
+            } catch (error) {
+                let errorMessage = 'Failed to send message. Please try again later.';
+                try {
+                    const errorData = JSON.parse(error.message);
+                    errorMessage = errorData.message || errorMessage;
+                } catch {
+                    errorMessage = error.message || errorMessage;
+                }
+                showFormMessage(errorMessage, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        });
+
+        function validateForm() {
+            let isValid = true;
+            const name = document.getElementById('name');
+            const email = document.getElementById('email');
+            const message = document.getElementById('message');
+            document.querySelectorAll('.error-text').forEach(el => el.remove());
+
+            if (!name.value.trim()) {
+                showError(name, 'Name is required');
+                isValid = false;
             }
 
-            this.reset();
-            showFormMessage(result.message || 'Message sent successfully!', 'success');
-        } catch (error) {
-            console.error('Form submission error:', error);
-            showFormMessage(
-                error.message || 'Failed to send message. Please try again later.', 
-                'error'
-            );
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalBtnText;
-        }
-    });
+            if (!email.value.trim()) {
+                showError(email, 'Email is required');
+                isValid = false;
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
+                showError(email, 'Please enter a valid email');
+                isValid = false;
+            }
 
-    function validateForm() {
-        let isValid = true;
-        const name = document.getElementById('name');
-        const email = document.getElementById('email');
-        const message = document.getElementById('message');
+            if (!message.value.trim()) {
+                showError(message, 'Message is required');
+                isValid = false;
+            } else if (message.value.trim().length < 10) {
+                showError(message, 'Message should be at least 10 characters');
+                isValid = false;
+            }
 
-        // Clear previous errors
-        document.querySelectorAll('.error-text').forEach(el => el.remove());
-
-        // Validate name
-        if (!name.value.trim()) {
-            showError(name, 'Name is required');
-            isValid = false;
+            return isValid;
         }
 
-        // Validate email
-        if (!email.value.trim()) {
-            showError(email, 'Email is required');
-            isValid = false;
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
-            showError(email, 'Please enter a valid email');
-            isValid = false;
+        function showError(input, message) {
+            const errorElement = document.createElement('div');
+            errorElement.className = 'error-text';
+            errorElement.textContent = message;
+            input.parentNode.insertBefore(errorElement, input.nextSibling);
+            input.classList.add('error');
         }
 
-        // Validate message
-        if (!message.value.trim()) {
-            showError(message, 'Message is required');
-            isValid = false;
-        } else if (message.value.trim().length < 10) {
-            showError(message, 'Message should be at least 10 characters');
-            isValid = false;
-        }
+        function showFormMessage(message, type) {
+            const existingMsg = contactForm.querySelector('.form-message');
+            if (existingMsg) existingMsg.remove();
 
-        return isValid;
+            const msgElement = document.createElement('div');
+            msgElement.className = `form-message ${type}`;
+            msgElement.textContent = message;
+
+            const submitBtn = contactForm.querySelector('button[type="submit"]');
+            contactForm.insertBefore(msgElement, submitBtn);
+
+            setTimeout(() => {
+                msgElement.classList.add('fade-out');
+                setTimeout(() => msgElement.remove(), 500);
+            }, 5000);
+        }
     }
-
-    function showError(input, message) {
-        const errorElement = document.createElement('div');
-        errorElement.className = 'error-text';
-        errorElement.textContent = message;
-        input.parentNode.insertBefore(errorElement, input.nextSibling);
-        input.classList.add('error');
-    }
-
-    function showFormMessage(message, type) {
-        const existingMsg = contactForm.querySelector('.form-message');
-        if (existingMsg) existingMsg.remove();
-
-        const msgElement = document.createElement('div');
-        msgElement.className = `form-message ${type}`;
-        msgElement.textContent = message;
-
-        const submitBtn = contactForm.querySelector('button[type="submit"]');
-        contactForm.insertBefore(msgElement, submitBtn);
-
-        setTimeout(() => {
-            msgElement.classList.add('fade-out');
-            setTimeout(() => msgElement.remove(), 500);
-        }, 5000);
-    }
-}
 
     // ========== Project Card Animations ==========
     const projectCards = document.querySelectorAll('.project-card');
@@ -219,9 +213,7 @@ if (contactForm) {
             rootMargin: '0px 0px -100px 0px'
         });
 
-        projectCards.forEach(card => {
-            projectObserver.observe(card);
-        });
+        projectCards.forEach(card => projectObserver.observe(card));
     }
 
     // ========== ScrollReveal Animations ==========
@@ -274,14 +266,12 @@ if (contactForm) {
         });
     });
 
-    // ========== Project Card Interactions ==========
+    // ========== Project Card Click Interaction ==========
     document.querySelectorAll('.project-card').forEach(card => {
         card.addEventListener('click', function (e) {
             if (!e.target.closest('.project-link')) {
                 const link = this.querySelector('.project-link');
-                if (link) {
-                    window.open(link.href, '_blank');
-                }
+                if (link) window.open(link.href, '_blank');
             }
         });
     });
