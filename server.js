@@ -5,31 +5,33 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 
 const app = express();
 
-// Middleware setup
+// Enhanced CORS configuration
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type']
+  allowedHeaders: ['Content-Type'],
+  credentials: true
 }));
 
+// Body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from 'public' directory
+// Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// API endpoint
+// Contact form endpoint
 app.post('/api/contact', async (req, res) => {
   try {
-    // Validate required fields
+    // Validate request
     if (!req.body.name || !req.body.email || !req.body.message) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Name, email, and message are required' 
+      return res.status(400).json({
+        success: false,
+        message: 'Name, email, and message are required'
       });
     }
 
-    // Prepare data
+    // Prepare data for Google Apps Script
     const formData = {
       name: req.body.name.trim(),
       email: req.body.email.trim(),
@@ -38,55 +40,53 @@ app.post('/api/contact', async (req, res) => {
     };
 
     // Send to Google Apps Script
-    const scriptUrl = 'https://script.google.com/macros/s/AKfycbyjNr-a1DOWhjY_gcFjJtyf2cPh7gc3WnlFeA0ODAbibEDx9-VNwzNWc6IMq7HUXn5J/exec';
-    const response = await fetch(scriptUrl, {
+    const response = await fetch('https://script.google.com/macros/s/AKfycbz1aVncg6ajX6Nv36kDho2o0X9Btp3-SK6LNuAW2o7mwzkgzsAE84q0LTORjq2CKlpF/exec', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(formData)
     });
 
-    // Handle response
-    const textResponse = await response.text();
-    let result;
-    
-    try {
-      result = JSON.parse(textResponse);
-    } catch (e) {
-      console.error('Failed to parse response:', textResponse);
-      throw new Error('Invalid response from server');
-    }
+    // Parse response
+    const result = await response.json();
 
+    // Forward response to client
     if (result.result === 'success') {
-      return res.json({ 
-        success: true, 
-        message: result.message || 'Message sent successfully!' 
+      res.json({
+        success: true,
+        message: result.message || 'Message sent successfully!'
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: result.message || 'Failed to send message'
       });
     }
-
-    return res.status(400).json({ 
-      success: false, 
-      message: result.message || 'Failed to send message' 
-    });
-
   } catch (error) {
     console.error('Contact form error:', error);
-    return res.status(500).json({ 
-      success: false, 
-      message: error.message || 'Internal server error' 
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
     });
   }
 });
 
 // Handle preflight requests
-app.options('/api/contact', cors());
+app.options('*', cors());
 
-// All other routes
+// SPA fallback
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Start server
+// Error handling
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ success: false, message: 'Something went wrong!' });
+});
+
 const PORT = process.env.PORT || 5500;
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
