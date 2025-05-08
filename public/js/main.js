@@ -81,20 +81,20 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    //  ========== Contact Form Handling ==========
+// ========== Contact Form Handling ==========
     const contactForm = document.getElementById('contact-form');
     if (contactForm) {
         contactForm.addEventListener('submit', async function (e) {
             e.preventDefault();
-    
+
             const submitBtn = this.querySelector('button[type="submit"]');
             const originalBtnText = submitBtn.innerHTML;
-    
-            // Validate form
+
+            // Validate form first
             if (!validateForm()) {
                 return;
             }
-    
+
             try {
                 // Update button state
                 submitBtn.disabled = true;
@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         <i class="fas fa-spinner fa-spin"></i> Sending...
                     </span>
                 `;
-    
+
                 // Prepare form data
                 const formData = {
                     name: document.getElementById('name').value.trim(),
@@ -111,8 +111,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     subject: document.getElementById('subject').value.trim() || 'No subject',
                     message: document.getElementById('message').value.trim()
                 };
-    
-                // Send to server
+
+                // Send to our server endpoint
                 const response = await fetch('/api/contact', {
                     method: 'POST',
                     headers: {
@@ -120,14 +120,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     },
                     body: JSON.stringify(formData)
                 });
-    
-                // Handle response
-                const result = await response.json();
-    
+
+                // Check if response is OK
                 if (!response.ok) {
-                    throw new Error(result.message || 'Failed to send message');
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
-    
+
+                // Process successful response
+                const result = await response.json();
+                
                 if (result.success) {
                     this.reset();
                     showFormMessage(result.message || 'Message sent successfully!', 'success');
@@ -141,35 +143,36 @@ document.addEventListener('DOMContentLoaded', function () {
                     'error'
                 );
             } finally {
+                // Reset button state
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnText;
             }
         });
-    
+
         function validateForm() {
             let isValid = true;
             const name = document.getElementById('name');
             const email = document.getElementById('email');
             const message = document.getElementById('message');
-    
+
             // Clear previous errors
             document.querySelectorAll('.error-text').forEach(el => el.remove());
-    
+
             // Validate name
             if (!name.value.trim()) {
                 showError(name, 'Name is required');
                 isValid = false;
             }
-    
+
             // Validate email
             if (!email.value.trim()) {
                 showError(email, 'Email is required');
                 isValid = false;
             } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
-                showError(email, 'Please enter a valid email');
+                showError(email, 'Please enter a valid email address');
                 isValid = false;
             }
-    
+
             // Validate message
             if (!message.value.trim()) {
                 showError(message, 'Message is required');
@@ -178,10 +181,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 showError(message, 'Message should be at least 10 characters');
                 isValid = false;
             }
-    
+
             return isValid;
         }
-    
+
         function showError(input, message) {
             const errorElement = document.createElement('div');
             errorElement.className = 'error-text';
@@ -189,21 +192,26 @@ document.addEventListener('DOMContentLoaded', function () {
             input.parentNode.insertBefore(errorElement, input.nextSibling);
             input.classList.add('error');
         }
-    
+
         function showFormMessage(message, type) {
-            const existingMsg = contactForm.querySelector('.form-message');
-            if (existingMsg) existingMsg.remove();
-    
-            const msgElement = document.createElement('div');
-            msgElement.className = `form-message ${type}`;
-            msgElement.textContent = message;
-    
-            const submitBtn = contactForm.querySelector('button[type="submit"]');
-            contactForm.insertBefore(msgElement, submitBtn);
-    
+            // Remove existing messages
+            const existingMessages = document.querySelectorAll('.form-message');
+            existingMessages.forEach(msg => msg.remove());
+
+            // Create new message
+            const messageElement = document.createElement('div');
+            messageElement.className = `form-message ${type}`;
+            messageElement.innerHTML = `
+                <p>${message}</p>
+            `;
+            
+            // Insert message
+            contactForm.insertBefore(messageElement, contactForm.firstChild);
+            
+            // Auto-hide after 5 seconds
             setTimeout(() => {
-                msgElement.classList.add('fade-out');
-                setTimeout(() => msgElement.remove(), 500);
+                messageElement.classList.add('fade-out');
+                setTimeout(() => messageElement.remove(), 500);
             }, 5000);
         }
     }
