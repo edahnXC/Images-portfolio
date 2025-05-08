@@ -40,7 +40,7 @@ app.post('/api/contact', async (req, res) => {
     };
 
     // Send to Google Apps Script
-    const response = await fetch('https://script.google.com/macros/s/AKfycbz1aVncg6ajX6Nv36kDho2o0X9Btp3-SK6LNuAW2o7mwzkgzsAE84q0LTORjq2CKlpF/exec', {
+    const response = await fetch('https://script.google.com/macros/s/AKfycbyjNr-a1DOWhjY_gcFjJtyf2cPh7gc3WnlFeA0ODAbibEDx9-VNwzNWc6IMq7HUXn5J/exec', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -78,12 +78,6 @@ app.options('*', cors());
 // SPA fallback
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Error handling
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ success: false, message: 'Something went wrong!' });
 });
 
 const PORT = process.env.PORT || 5500;
