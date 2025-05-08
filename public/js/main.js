@@ -1,8 +1,8 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // ========== Preloader ==========
     const preloader = document.querySelector('.preloader');
     if (preloader) {
-        window.addEventListener('load', function() {
+        window.addEventListener('load', function () {
             preloader.classList.add('fade-out');
             setTimeout(() => {
                 preloader.style.display = 'none';
@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const hamburger = document.querySelector('.hamburger');
     const navLinks = document.querySelector('.nav-links');
     if (hamburger && navLinks) {
-        hamburger.addEventListener('click', function() {
+        hamburger.addEventListener('click', function () {
             this.classList.toggle('active');
             navLinks.classList.toggle('active');
             document.body.classList.toggle('no-scroll');
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========== Sticky Header ==========
     const header = document.querySelector('.header');
     if (header) {
-        window.addEventListener('scroll', function() {
+        window.addEventListener('scroll', function () {
             header.classList.toggle('scrolled', window.scrollY > 50);
         });
     }
@@ -41,10 +41,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========== Back to Top Button ==========
     const backToTopBtn = document.querySelector('.back-to-top');
     if (backToTopBtn) {
-        window.addEventListener('scroll', function() {
+        window.addEventListener('scroll', function () {
             backToTopBtn.classList.toggle('active', window.scrollY > 300);
         });
-        
+
         backToTopBtn.addEventListener('click', (e) => {
             e.preventDefault();
             window.scrollTo({
@@ -62,17 +62,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ========== Smooth Scrolling ==========
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
+        anchor.addEventListener('click', function (e) {
             const targetId = this.getAttribute('href');
             if (targetId === '#' || targetId === '#!') return;
-            
+
             e.preventDefault();
             const targetElement = document.querySelector(targetId);
-            
+
             if (targetElement) {
                 const headerHeight = document.querySelector('.header')?.offsetHeight || 80;
                 const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
-                
+
                 window.scrollTo({
                     top: targetPosition,
                     behavior: 'smooth'
@@ -82,68 +82,139 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 // ========== Contact Form Handling ==========
-const contactForm = document.getElementById('contact-form');
-if (contactForm) {
-    contactForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalBtnText = submitBtn.textContent;
-        
-        try {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Sending...';
-            
-            const formData = {
-                name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
-                subject: document.getElementById('subject').value,
-                message: document.getElementById('message').value
-            };
-            
-            // Replace with your Google Apps Script URL
-            const response = await fetch('https://script.google.com/macros/s/AKfycbyd6qI8SDRfaxoyah7GW26a3045t4ExgEa1VO_GtbIV4o5lOz38a-wNKcA2YdrjUwUi/exec', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                this.reset();
-                showFormMessage('Message sent successfully!', 'success');
-            } else {
-                throw new Error(result.message || 'Failed to send message');
+    const contactForm = document.getElementById('contact-form');
+    if (contactForm) {
+        contactForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+
+            // Validate form first
+            if (!validateForm()) {
+                return;
             }
-        } catch (error) {
-            showFormMessage(error.message || 'Failed to send message. Please try again.', 'error');
-            console.error('Error:', error);
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalBtnText;
+
+            try {
+                // Update button state
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `
+                    <span class="btn-loading">
+                        <i class="fas fa-spinner fa-spin"></i> Sending...
+                    </span>
+                `;
+
+                // Prepare form data
+                const formData = {
+                    name: document.getElementById('name').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    subject: document.getElementById('subject').value.trim() || 'No subject',
+                    message: document.getElementById('message').value.trim()
+                };
+
+                // Send to our server endpoint
+                const response = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                // Check if response is OK
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+
+                // Process successful response
+                const result = await response.json();
+                
+                if (result.success) {
+                    this.reset();
+                    showFormMessage(result.message || 'Message sent successfully!', 'success');
+                } else {
+                    throw new Error(result.message || 'Failed to send message');
+                }
+            } catch (error) {
+                console.error('Form submission error:', error);
+                showFormMessage(
+                    error.message || 'Failed to send message. Please try again later.', 
+                    'error'
+                );
+            } finally {
+                // Reset button state
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        });
+
+        function validateForm() {
+            let isValid = true;
+            const name = document.getElementById('name');
+            const email = document.getElementById('email');
+            const message = document.getElementById('message');
+
+            // Clear previous errors
+            document.querySelectorAll('.error-text').forEach(el => el.remove());
+
+            // Validate name
+            if (!name.value.trim()) {
+                showError(name, 'Name is required');
+                isValid = false;
+            }
+
+            // Validate email
+            if (!email.value.trim()) {
+                showError(email, 'Email is required');
+                isValid = false;
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
+                showError(email, 'Please enter a valid email address');
+                isValid = false;
+            }
+
+            // Validate message
+            if (!message.value.trim()) {
+                showError(message, 'Message is required');
+                isValid = false;
+            } else if (message.value.trim().length < 10) {
+                showError(message, 'Message should be at least 10 characters');
+                isValid = false;
+            }
+
+            return isValid;
         }
-    });
-    
-    function showFormMessage(message, type) {
-        const existingMsg = contactForm.querySelector('.form-message');
-        if (existingMsg) existingMsg.remove();
-        
-        const msgElement = document.createElement('div');
-        msgElement.className = `form-message ${type}`;
-        msgElement.textContent = message;
-        
-        const submitBtn = contactForm.querySelector('button[type="submit"]');
-        contactForm.insertBefore(msgElement, submitBtn);
-        
-        setTimeout(() => {
-            msgElement.classList.add('fade-out');
-            setTimeout(() => msgElement.remove(), 500);
-        }, 5000);
+
+        function showError(input, message) {
+            const errorElement = document.createElement('div');
+            errorElement.className = 'error-text';
+            errorElement.textContent = message;
+            input.parentNode.insertBefore(errorElement, input.nextSibling);
+            input.classList.add('error');
+        }
+
+        function showFormMessage(message, type) {
+            // Remove existing messages
+            const existingMessages = document.querySelectorAll('.form-message');
+            existingMessages.forEach(msg => msg.remove());
+
+            // Create new message
+            const messageElement = document.createElement('div');
+            messageElement.className = `form-message ${type}`;
+            messageElement.innerHTML = `
+                <p>${message}</p>
+            `;
+            
+            // Insert message
+            contactForm.insertBefore(messageElement, contactForm.firstChild);
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                messageElement.classList.add('fade-out');
+                setTimeout(() => messageElement.remove(), 500);
+            }, 5000);
+        }
     }
-}
 
     // ========== Project Card Animations ==========
     const projectCards = document.querySelectorAll('.project-card');
@@ -175,22 +246,19 @@ if (contactForm) {
             reset: false
         });
 
-        // Hero section
         sr.reveal('.hero-title', { delay: 300 });
         sr.reveal('.hero-subtitle', { delay: 500 });
         sr.reveal('.btn', { delay: 700 });
 
-        // About section
         sr.reveal('.about-img', { origin: 'left' });
         sr.reveal('.about-text h3', { delay: 300 });
         sr.reveal('.about-text p', { delay: 400, interval: 100 });
         sr.reveal('.skills h4', { delay: 500 });
         sr.reveal('.skills li', { delay: 600, interval: 100 });
 
-        // Projects section
         sr.reveal('.projects .section-title', { delay: 200 });
         sr.reveal('.projects .section-subtitle', { delay: 300 });
-        sr.reveal('.project-card', { 
+        sr.reveal('.project-card', {
             interval: 200,
             origin: 'bottom',
             distance: '50px',
@@ -199,12 +267,10 @@ if (contactForm) {
             viewFactor: 0.1
         });
 
-        // Contact section
         sr.reveal('.contact-item', { interval: 200 });
         sr.reveal('.social-links a', { interval: 100 });
         sr.reveal('.form-group', { interval: 150 });
 
-        // Footer
         sr.reveal('.footer-logo p', { delay: 300 });
         sr.reveal('.footer-links h4', { delay: 400 });
         sr.reveal('.footer-links li', { delay: 500, interval: 100 });
@@ -212,46 +278,17 @@ if (contactForm) {
         sr.reveal('.footer-social a', { delay: 700, interval: 100 });
     }
 
-    // ========== Keyboard Handling for Contact Form ==========
-    window.addEventListener('resize', function() {
-        if (window.innerHeight < 500) { // When keyboard is open
-            document.querySelector('.contact-form')?.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
-        }
-    });
-
-    // ========== Animate Section Titles ==========
-    const sectionTitles = document.querySelectorAll('.section-title');
-    if (sectionTitles.length > 0) {
-        const titleObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animated');
-                    titleObserver.unobserve(entry.target);
-                }
-            });
-        }, {
-            threshold: 0.5
-        });
-
-        sectionTitles.forEach(title => {
-            titleObserver.observe(title);
-        });
-    }
-
-    // ========== Project Link Interactions ==========
-    document.querySelectorAll('.project-link').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.stopPropagation(); // Prevent card click if needed
-            // You can add analytics tracking here if needed
+    // ========== Image Error Handling ==========
+    document.querySelectorAll('img').forEach(img => {
+        img.addEventListener('error', function () {
+            this.src = 'images/default-image.jpg';
+            this.alt = 'Default placeholder image';
         });
     });
 
     // ========== Project Card Interactions ==========
     document.querySelectorAll('.project-card').forEach(card => {
-        card.addEventListener('click', function(e) {
+        card.addEventListener('click', function (e) {
             if (!e.target.closest('.project-link')) {
                 const link = this.querySelector('.project-link');
                 if (link) {
