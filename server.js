@@ -35,15 +35,43 @@ app.options('/api/contact', (req, res) => {
   res.status(200).send();
 });
 
-// Contact form route
+// reCAPTCHA verification function
+async function verifyRecaptcha(token) {
+  try {
+    const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: `secret=6LfBajMrAAAAABkT1c9i5r4vgMt6kXycVNwZkj8S&response=${token}`
+    });
+
+    const data = await response.json();
+    return data.success && data.score >= 0.5; // Adjust threshold as needed
+  } catch (error) {
+    console.error('reCAPTCHA verification error:', error);
+    return false;
+  }
+}
+
+// Contact form route with reCAPTCHA
 app.post('/api/contact', async (req, res) => {
   try {
-    const { name, email, subject, message } = req.body;
+    const { name, email, subject, message, recaptchaToken } = req.body;
 
-    if (!name || !email || !message) {
+    if (!name || !email || !message || !recaptchaToken) {
       return res.status(400).json({
         success: false,
-        message: 'Name, email, and message are required fields'
+        message: 'Name, email, message, and reCAPTCHA token are required fields'
+      });
+    }
+
+    // Verify reCAPTCHA token
+    const isHuman = await verifyRecaptcha(recaptchaToken);
+    if (!isHuman) {
+      return res.status(400).json({
+        success: false,
+        message: 'reCAPTCHA verification failed. Please try again.'
       });
     }
 
