@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
+require('dotenv').config(); // Load .env file
 
 // Dynamic import for node-fetch
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
@@ -36,18 +37,20 @@ app.options('/api/contact', (req, res) => {
 });
 
 // reCAPTCHA verification function
-async function verifyRecaptcha(token) {
+async function verifyRecaptcha(token, remoteIp) {
   try {
     const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: `secret=6LfBajMrAAAAABkT1c9i5r4vgMt6kXycVNwZkj8S&response=${token}`
+      body: `secret=${process.env.RECAPTCHA_SECRET}&response=${token}&remoteip=${remoteIp}`
     });
 
     const data = await response.json();
-    return data.success && data.score >= 0.5; // Adjust threshold as needed
+    console.log('reCAPTCHA response:', data); // Debugging
+
+    return data.success && data.score >= 0.5; // You can lower score threshold if needed
   } catch (error) {
     console.error('reCAPTCHA verification error:', error);
     return false;
@@ -66,8 +69,7 @@ app.post('/api/contact', async (req, res) => {
       });
     }
 
-    // Verify reCAPTCHA token
-    const isHuman = await verifyRecaptcha(recaptchaToken);
+    const isHuman = await verifyRecaptcha(recaptchaToken, req.ip);
     if (!isHuman) {
       return res.status(400).json({
         success: false,
@@ -111,7 +113,6 @@ app.post('/api/contact', async (req, res) => {
       });
 
     } catch (e) {
-      // Not JSON - fallback to checking if it contains "success"
       if (responseText.toLowerCase().includes('success')) {
         return res.status(200).json({
           success: true,
