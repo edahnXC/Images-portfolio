@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // ========== reCAPTCHA v3 Implementation ==========
     function loadRecaptcha() {
         const script = document.createElement('script');
-        script.src = 'https://www.google.com/recaptcha/api.js?render=6LezbjMrAAAAAPCUSC154aAlyDwc0ywiQGbJpwB0';
+        script.src = 'https://www.google.com/recaptcha/api.js?render=6LcldTMrAAAAAF2XIMTThvbjMvpj8Yfqf0lwtQwY';
         script.async = true;
         script.defer = true;
         document.head.appendChild(script);
@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Get reCAPTCHA token - CORRECTED to use your site key
                 const token = await new Promise((resolve) => {
                     grecaptcha.ready(() => {
-                        grecaptcha.execute('6LezbjMrAAAAAPCUSC154aAlyDwc0ywiQGbJpwB0', { action: 'submit' }).then(resolve);
+                        grecaptcha.execute('6LcldTMrAAAAAF2XIMTThvbjMvpj8Yfqf0lwtQwY', { action: 'submit' }).then(resolve);
                     });
                 });
 
