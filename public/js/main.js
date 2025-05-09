@@ -47,10 +47,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         backToTopBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
+            if (document.documentElement.scrollTop > 0) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         });
     }
 
@@ -70,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const targetElement = document.querySelector(targetId);
 
             if (targetElement) {
-                const headerHeight = document.querySelector('.header')?.offsetHeight || 80;
+                const headerHeight = document.querySelector('.header')?.offsetHeight || 80; // fallback to 80
                 const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
 
                 window.scrollTo({
@@ -81,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-// ========== Contact Form Handling ==========
+    // ========== Contact Form Handling ==========
     const contactForm = document.getElementById('contact-form');
     if (contactForm) {
         contactForm.addEventListener('submit', async function (e) {
@@ -90,13 +89,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const submitBtn = this.querySelector('button[type="submit"]');
             const originalBtnText = submitBtn.innerHTML;
 
-            // Validate form first
-            if (!validateForm()) {
-                return;
-            }
+            if (!validateForm()) return;
 
             try {
-                // Update button state
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = `
                     <span class="btn-loading">
@@ -104,7 +99,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     </span>
                 `;
 
-                // Prepare form data
                 const formData = {
                     name: document.getElementById('name').value.trim(),
                     email: document.getElementById('email').value.trim(),
@@ -112,38 +106,46 @@ document.addEventListener('DOMContentLoaded', function () {
                     message: document.getElementById('message').value.trim()
                 };
 
-                // Send to our server endpoint
-                const response = await fetch('/api/contact', {
+                const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                    ? 'http://localhost:5500/api/contact'
+                    : 'https://images-portfolio-wp42.onrender.com/api/contact';
+
+                const response = await fetch(apiUrl, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
                 });
 
-                // Check if response is OK
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `Server responded with status ${response.status}`);
                 }
 
-                // Process successful response
                 const result = await response.json();
-                
                 if (result.success) {
                     this.reset();
                     showFormMessage(result.message || 'Message sent successfully!', 'success');
                 } else {
                     throw new Error(result.message || 'Failed to send message');
                 }
+
             } catch (error) {
                 console.error('Form submission error:', error);
-                showFormMessage(
-                    error.message || 'Failed to send message. Please try again later.', 
-                    'error'
-                );
+                let userMessage = 'Failed to send message. Please try again later.';
+
+                if (error.message.includes('Failed to fetch')) {
+                    userMessage = 'Network error. Please check your internet connection.';
+                } else if (error.message.includes('500')) {
+                    userMessage = 'Server error. Please try again later.';
+                } else if (error.message.includes('405')) {
+                    userMessage = 'Action not allowed. Please refresh the page.';
+                } else if (error.message) {
+                    userMessage = error.message;
+                }
+
+                showFormMessage(userMessage, 'error');
+
             } finally {
-                // Reset button state
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnText;
             }
@@ -155,16 +157,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const email = document.getElementById('email');
             const message = document.getElementById('message');
 
-            // Clear previous errors
             document.querySelectorAll('.error-text').forEach(el => el.remove());
 
-            // Validate name
             if (!name.value.trim()) {
                 showError(name, 'Name is required');
                 isValid = false;
             }
 
-            // Validate email
             if (!email.value.trim()) {
                 showError(email, 'Email is required');
                 isValid = false;
@@ -173,7 +172,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 isValid = false;
             }
 
-            // Validate message
             if (!message.value.trim()) {
                 showError(message, 'Message is required');
                 isValid = false;
@@ -194,25 +192,19 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         function showFormMessage(message, type) {
-            // Remove existing messages
-            const existingMessages = document.querySelectorAll('.form-message');
-            existingMessages.forEach(msg => msg.remove());
+            document.querySelectorAll('.form-message').forEach(msg => msg.remove());
 
-            // Create new message
             const messageElement = document.createElement('div');
             messageElement.className = `form-message ${type}`;
-            messageElement.innerHTML = `
-                <p>${message}</p>
-            `;
-            
-            // Insert message
+            messageElement.innerHTML = `<p>${message}</p>`;
             contactForm.insertBefore(messageElement, contactForm.firstChild);
-            
-            // Auto-hide after 5 seconds
-            setTimeout(() => {
-                messageElement.classList.add('fade-out');
-                setTimeout(() => messageElement.remove(), 500);
-            }, 5000);
+
+            if (type !== 'success') {
+                setTimeout(() => {
+                    messageElement.classList.add('fade-out');
+                    setTimeout(() => messageElement.remove(), 500);
+                }, 5000);
+            }
         }
     }
 
@@ -231,13 +223,11 @@ document.addEventListener('DOMContentLoaded', function () {
             rootMargin: '0px 0px -100px 0px'
         });
 
-        projectCards.forEach(card => {
-            projectObserver.observe(card);
-        });
+        projectCards.forEach(card => projectObserver.observe(card));
     }
 
     // ========== ScrollReveal Animations ==========
-    if (typeof ScrollReveal !== 'undefined') {
+    if (typeof ScrollReveal === 'function') {
         const sr = ScrollReveal({
             origin: 'bottom',
             distance: '60px',
@@ -291,9 +281,7 @@ document.addEventListener('DOMContentLoaded', function () {
         card.addEventListener('click', function (e) {
             if (!e.target.closest('.project-link')) {
                 const link = this.querySelector('.project-link');
-                if (link) {
-                    window.open(link.href, '_blank');
-                }
+                if (link) window.open(link.href, '_blank');
             }
         });
     });

@@ -2,81 +2,111 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 
-// Dynamically import node-fetch to avoid ESM issue
+// Dynamic import for node-fetch
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 const app = express();
 
-// Enable CORS for all origins and methods
+// Enable CORS
 app.use(cors({
   origin: '*',
-  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }));
 
-// Body parser middleware
+// Parse incoming requests
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static frontend files from /public
+// Serve static files from "public" directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ======= CONTACT FORM PROXY =======
+// Health check route
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'healthy' });
+});
+
+// Handle preflight requests
+app.options('/api/contact', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.status(200).send();
+});
+
+// Contact form route
 app.post('/api/contact', async (req, res) => {
   try {
-    // First validate the request
-    if (!req.body.name || !req.body.email || !req.body.message) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Name, email, and message are required' 
+    const { name, email, subject, message } = req.body;
+
+    if (!name || !email || !message) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name, email, and message are required fields'
       });
     }
 
-    // Send to Google Apps Script
-    const response = await fetch('https://script.google.com/macros/s/AKfycbz1aVncg6ajX6Nv36kDho2o0X9Btp3-SK6LNuAW2o7mwzkgzsAE84q0LTORjq2CKlpF/exec', {
+    const formData = {
+      name: name.trim(),
+      email: email.trim(),
+      subject: subject?.trim() || 'No subject',
+      message: message.trim()
+    };
+
+    // Google Apps Script Web App URL for email sending
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycby1HEHFTOOTrDWtOGrLUfkxLJhiEXKDTor_xKX048odqRueer-q9o80Cx-kJLWndpj_/exec';
+
+    const response = await fetch(scriptUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(req.body)
+      body: JSON.stringify(formData)
     });
 
-    // Handle Google Apps Script response
-    const result = await response.text(); // First get as text to handle possible non-JSON response
-    
+    const responseText = await response.text();
+
     try {
-      const jsonResult = JSON.parse(result);
-      if (jsonResult.result === 'success') {
-        return res.json({ success: true, message: 'Message sent successfully!' });
-      } else {
-        return res.status(500).json({ 
-          success: false, 
-          message: jsonResult.message || 'Failed to process your message' 
+      const result = JSON.parse(responseText);
+
+      if (result.result === 'success') {
+        return res.status(200).json({
+          success: true,
+          message: result.message || 'Message sent successfully!'
         });
       }
+
+      return res.status(400).json({
+        success: false,
+        message: result.message || 'Failed to send message'
+      });
+
     } catch (e) {
-      // If response isn't JSON, check for success text
-      if (result.includes('success')) {
-        return res.json({ success: true, message: 'Message sent successfully!' });
+      // Not JSON - fallback to checking if it contains "success"
+      if (responseText.toLowerCase().includes('success')) {
+        return res.status(200).json({
+          success: true,
+          message: 'Message sent successfully!'
+        });
       }
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Unexpected response from server' 
+
+      return res.status(500).json({
+        success: false,
+        message: 'Unexpected response from server: ' + responseText
       });
     }
+
   } catch (error) {
     console.error('Contact form error:', error);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Internal server error: ' + error.message 
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error: ' + error.message
     });
   }
 });
 
-// Handle preflight requests
-app.options('*', cors());
-
-// ======= SPA fallback =======
+// SPA fallback
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -84,11 +114,15 @@ app.get('*', (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ success: false, message: 'Something broke!' });
+  res.status(500).json({
+    success: false,
+    message: 'Internal server error'
+  });
 });
 
-// Start the server
+// Start server
 const PORT = process.env.PORT || 5500;
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
+  console.log(`🔗 http://localhost:${PORT}`);
 });
