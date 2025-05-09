@@ -1,7 +1,6 @@
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
-require('dotenv').config(); // Load .env file
 
 // Dynamic import for node-fetch
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
@@ -36,44 +35,15 @@ app.options('/api/contact', (req, res) => {
   res.status(200).send();
 });
 
-// reCAPTCHA verification function
-async function verifyRecaptcha(token, remoteIp) {
-  try {
-    const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: `secret=${process.env.RECAPTCHA_SECRET}&response=${token}&remoteip=${remoteIp}`
-    });
-
-    const data = await response.json();
-    console.log('reCAPTCHA response:', data); // Debugging
-
-    return data.success && data.score >= 0.5; // You can lower score threshold if needed
-  } catch (error) {
-    console.error('reCAPTCHA verification error:', error);
-    return false;
-  }
-}
-
-// Contact form route with reCAPTCHA
+// Contact form route
 app.post('/api/contact', async (req, res) => {
   try {
-    const { name, email, subject, message, recaptchaToken } = req.body;
+    const { name, email, subject, message } = req.body;
 
-    if (!name || !email || !message || !recaptchaToken) {
+    if (!name || !email || !message) {
       return res.status(400).json({
         success: false,
-        message: 'Name, email, message, and reCAPTCHA token are required fields'
-      });
-    }
-
-    const isHuman = await verifyRecaptcha(recaptchaToken, req.ip);
-    if (!isHuman) {
-      return res.status(400).json({
-        success: false,
-        message: 'reCAPTCHA verification failed. Please try again.'
+        message: 'Name, email, and message are required fields'
       });
     }
 
@@ -113,6 +83,7 @@ app.post('/api/contact', async (req, res) => {
       });
 
     } catch (e) {
+      // Not JSON - fallback to checking if it contains "success"
       if (responseText.toLowerCase().includes('success')) {
         return res.status(200).json({
           success: true,

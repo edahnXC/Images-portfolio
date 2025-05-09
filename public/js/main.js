@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const targetElement = document.querySelector(targetId);
 
             if (targetElement) {
-                const headerHeight = document.querySelector('.header')?.offsetHeight || 80;
+                const headerHeight = document.querySelector('.header')?.offsetHeight || 80; // fallback to 80
                 const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
 
                 window.scrollTo({
@@ -79,18 +79,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
-
-    // ========== reCAPTCHA v3 Implementation ==========
-    function loadRecaptcha() {
-        const script = document.createElement('script');
-        script.src = 'https://www.google.com/recaptcha/api.js?render=6LcldTMrAAAAAF2XIMTThvbjMvpj8Yfqf0lwtQwY';
-        script.async = true;
-        script.defer = true;
-        document.head.appendChild(script);
-    }
-
-    // Load reCAPTCHA when the page loads
-    loadRecaptcha();
 
     // ========== Contact Form Handling ==========
     const contactForm = document.getElementById('contact-form');
@@ -111,19 +99,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     </span>
                 `;
 
-                // Get reCAPTCHA token - CORRECTED to use your site key
-                const token = await new Promise((resolve) => {
-                    grecaptcha.ready(() => {
-                        grecaptcha.execute('6LcldTMrAAAAAF2XIMTThvbjMvpj8Yfqf0lwtQwY', { action: 'submit' }).then(resolve);
-                    });
-                });
-
                 const formData = {
                     name: document.getElementById('name').value.trim(),
                     email: document.getElementById('email').value.trim(),
                     subject: document.getElementById('subject').value.trim() || 'No subject',
-                    message: document.getElementById('message').value.trim(),
-                    recaptchaToken: token
+                    message: document.getElementById('message').value.trim()
                 };
 
                 const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -159,8 +139,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     userMessage = 'Server error. Please try again later.';
                 } else if (error.message.includes('405')) {
                     userMessage = 'Action not allowed. Please refresh the page.';
-                } else if (error.message.includes('reCAPTCHA')) {
-                    userMessage = 'Security verification failed. Please try again.';
                 } else if (error.message) {
                     userMessage = error.message;
                 }
