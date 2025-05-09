@@ -55,7 +55,7 @@ app.post('/api/contact', async (req, res) => {
     };
 
     // Google Apps Script Web App URL for email sending
-    const scriptUrl = 'https://script.google.com/macros/s/AKfycby1HEHFTOOTrDWtOGrLUfkxLJhiEXKDTor_xKX048odqRueer-q9o80Cx-kJLWndpj_/exec';
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycbwoWX6Gu1Xjnoxvezs5Ye1A1cduRpRFX58Bmk1qpQj6a-sU1I2viO2bjm7fyGLzAhZk/exec';
 
     const response = await fetch(scriptUrl, {
       method: 'POST',
